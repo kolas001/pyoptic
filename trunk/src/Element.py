@@ -13,7 +13,8 @@ class Element :
     def __init__(self,shape,dimension,placement,material) :
         print "Element:__init__>"
         self.shape     = shape
-        self.dimension = dimension      
-        self.material  = material 
-    
+        self.dimension = dimension
+        self.placement = placement
+        self.material  = material        
+
     
