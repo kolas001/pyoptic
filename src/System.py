@@ -25,13 +25,13 @@ class System :
         # source 
         spos = (0,0,0)
         sdir = (0,0,1)
-        s = Source(Placement(spos,sdir))
+        s0 = Source(Placement(spos,sdir))
         
         # curved surface 
         lpos = (0,0,20)
         ldir = (0,0,1)
         ldim = (5,5)
-        ss = SphericalSurface(Element(Element.circ,ldim,Placement,Material(1.5)))
+        s1 = SphericalSurface(Volume(Volume.circ,ldim,Placement(lpos,ldir),Material((Material.glass,1.5))))
 
-        self.elist.append(s) 
-        self.elist.append(ss)
+        self.elist.append(s0) 
+        self.elist.append(s1)
