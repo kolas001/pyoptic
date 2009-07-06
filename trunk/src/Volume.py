@@ -4,8 +4,9 @@ from Base      import *
 from Material  import *
 from Placement import *
 
-class Element :
-    
+class Volume:
+    """ Orientable volume, base class to describe extent, material and orientation of a volume containing. Volume has a shape, dimension, placement and material """ 
+
     # shape of element
     rect = 0
     circ = 1 
@@ -17,4 +18,3 @@ class Element :
         self.placement = placement
         self.material  = material
 
-    
