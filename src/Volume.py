@@ -12,9 +12,11 @@ class Volume:
     circ = 1 
             
     def __init__(self,shape,dimension,placement,material) :
-        print "Element:__init__>"
         self.shape     = shape
         self.dimension = dimension
         self.placement = placement
         self.material  = material
+        print str(self)
 
+    def  __str__(self) :
+        return "Volume(shape="+str(self.shape)+",dimension="+str(self.dimension)+",placement="+str(self.placement)+",material="+str(self.material)+")"
