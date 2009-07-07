@@ -6,5 +6,7 @@ class Placement :
     def __init__(self, location, orientation) :
         self.location = location
         self.orientation = orientation
-    
-    
+        print str(self)
+
+    def __str__(self) :
+        return "Placement(location="+str(self.location)+",orientation="+str(self.orientation)+")"
