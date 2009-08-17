@@ -12,7 +12,7 @@ class Volume:
             
     def __init__(self,shape,dimension,placement,material) :
         self.shape     = shape
-        self.dimension = dimension
+        self.dimension = pl.array(dimension)
         self.placement = placement
         self.material  = material
         print str(self)
