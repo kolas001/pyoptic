@@ -1,12 +1,14 @@
 import pylab as pl
 
-from Volume import *
+from Elements import *
 
 class Source(Volume) :
-    def __init__(self,placement) :
+    def __init__(self,name,placement) :
+        self.name = name
         self.placement = placement
-        print str(self)
 
     def __str__(self) :
-        return "Source(placement="+str(self.placement)+")"
+        s  = 'Source                   : '+self.name+'\n'
+        s += 'Source.placement         : \n'+str(self.placement)
+        return s
 
