@@ -4,8 +4,8 @@ class Placement :
     """ Class to describe the location and orientation of a volume """
 
     def __init__(self, location, orientation) :
-        self.location = location
-        self.orientation = orientation
+        self.location    = pl.array(location)
+        self.orientation = pl.array(orientation)
         print str(self)
 
     def __str__(self) :
