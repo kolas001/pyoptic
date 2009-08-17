@@ -2,25 +2,20 @@ import pylab as py
 
 from Placement import *
 from Source    import *
-from Surfaces  import *
 from Material  import *
-
+from Elements  import *
 
 # Complete optical system
-class System : 
+class System(list) : 
 
     def __init__(self) :
         print "System:__init__>"
 
-        # empty element list
-        self.vlist = []
-        
         # maximum size as determined from the elements
         self.size = [0,0,0]
 
     def loadSystem(self) :
         print "System:laodSystem>"
-
 
     def checkSystem(self) :
         print "System:checkSystem>"
@@ -28,27 +23,35 @@ class System :
     def rayTrace(self) :
         print "System:rayTracing>"
 
-    def exampleSystem(self) :
-        print "System:exampleSystem>"
-        # source 
-        spos = [0,0,0]
-        sdir = [0,0,1]
-        s0 = Source(Placement(spos,sdir))
+    def __str__(self) :
+        s = ''
+        for e in self :
+            s +=str(e)
+        return s
+
+def exampleSystem() :
+    print "System:exampleSystem>"
+    # source 
+    spos = [0,0,0]
+    sdir = [0,0,1]
+    s0 = Source("light source",Placement(spos,sdir))
+
+    # curved surface 
+    lpos = [0,0,0.20]
+    ldir = [0,0,1]
+    ldim = [0.05,0.05,0.01]
+    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material((Material.glass,1.5)),20.0)
+    
+    # plane surface
+    ppos = [0,0,0.25]
+    pdir = [0,0,1]
+    pdim = [0.05,0.05,0.01]
+    s2 = PlaneSurface("plane 1",Volume.circ,pdim,Placement(ppos,pdir),Material((Material.glass,1.0)))
         
-        # curved surface 
-        lpos = [0,0,0.20]
-        ldir = [0,0,1]
-        ldim = [0.05,0.05]
-        s1 = SphericalSurface(Volume.circ,ldim,Placement(lpos,ldir),Material((Material.glass,1.5)),20.0)
+    # system
+    s = System()
+    s.append(s0)
+    s.append(s1)
+    s.append(s2)
 
-        # plane surface
-        ppos = [0,0,0.25]
-        pdir = [0,0,1]
-        pdim = [0.05,0.05]
-        s2 = PlaneSurface(Volume.circ,pdim,Placement(ppos,pdir),Material((Material.glass,1.0)))
-
-        self.vlist.append(s0) 
-        self.vlist.append(s1)
-        self.vlist.append(s2)
-
-        self.checkSystem()
+    return s

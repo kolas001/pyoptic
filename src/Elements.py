@@ -10,20 +10,26 @@ class Volume:
     rect = 0
     circ = 1 
             
-    def __init__(self,shape,dimension,placement,material) :
+    def __init__(self,name, shape,dimension,placement,material) :
+        self.name      = name
         self.shape     = shape
         self.dimension = pl.array(dimension)
         self.placement = placement
         self.material  = material
-        print str(self)
 
     def  __str__(self) :
-        return "Volume(shape="+str(self.shape)+",dimension="+str(self.dimension)+",placement="+str(self.placement)+",material="+str(self.material)+")"
+        s  = 'Volume\n'
+        s += 'Volume.shape             : '+str(self.shape)+'\n'
+        s += 'Volume.dimension         : '+str(self.dimension)+'\n'
+        s += 'Volume.placement         : \n'+str(self.placement)
+        s += 'Volume.material          : \n'+str(self.material)
+
+
+        return s 
         
 class PlaneSurface(Volume) :
-    def __init__(self,shape,dimension,placement,material) :
-        Volume.__init__(shape,dimension,placement,material)
-        print str(self)
+    def __init__(self,name,shape,dimension,placement,material) :
+        Volume.__init__(self,name,shape,dimension,placement,material)
         
     def propagate(inrays) :        
         outrays = []
@@ -34,16 +40,18 @@ class PlaneSurface(Volume) :
            print "Refract"
 
     def __str__(self) :
-        return "PlaneSurface("+str(Volume)+")"
+        s  = 'PlaneSurface             : '+self.name+'\n'
+        s += 'PlaneSurface.Volume      :\n'+Volume.__str__(self)
+        return s
             
 class SphericalSurface(Volume) :
-    def __init__(self,shape,dimension,placement,material,radcurv) :
+    def __init__(self,name,shape,dimension,placement,material,radcurv) :
+        self.name      = name
         self.shape     = shape
         self.dimension = dimension
         self.placement = placement
         self.material  = material
-        self.radcurv = radcurv
-        print str(self)
+        self.radcurv   = radcurv
 
     def propagate(inrays) :
         outrays = []
@@ -54,7 +62,10 @@ class SphericalSurface(Volume) :
             print "Refract" 
 
     def __str__(self) :
-        return "SphericalSurface("+Volume.__str__(self)+",radcurv="+str(self.radcurv)+")"
+        s  = 'SphericalSurface         : '+self.name+'\n'
+        s += 'SphericalSurface.volume  : \n'+Volume.__str__(self)+'\n'
+        s += 'SphericalSurface.radcurv : '+str(self.radcurv)+'\n'
+        return s
 
 class CylindricalSurface(Volume) :
     def __init__(self,volume) :
