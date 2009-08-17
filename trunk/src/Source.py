@@ -1,8 +1,8 @@
 import pylab as pl
 
-from Placement import *
+from Volume import *
 
-class Source :
+class Source(Volume) :
     def __init__(self,placement) :
         self.placement = placement
         print str(self)

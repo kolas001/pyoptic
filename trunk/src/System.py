@@ -1,6 +1,5 @@
 import pylab as py
 
-from Base      import *
 from Placement import *
 from Source    import *
 from Surfaces  import *

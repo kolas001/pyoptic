@@ -1,21 +1,7 @@
 import pylab as pl
 
-from Base      import *
 from Material  import *
 from Placement import *
-
-class Element :
-    
-    # shape of element
-    rect = 0
-    circ = 1 
-            
-    def __init__(self,shape,dimension,placement,material) :
-        print "Element:__init__>"
-        self.shape     = shape
-        self.dimension = dimension
-        self.placement = placement
-        self.material  = material
 
 class Volume:
     """ Orientable volume, base class to describe extent, material and orientation of a volume containing """ 
@@ -36,10 +22,7 @@ class Volume:
         
 class PlaneSurface(Volume) :
     def __init__(self,shape,dimension,placement,material) :
-        self.shape     = shape
-        self.dimension = dimension
-        self.placement = placement
-        self.material  = material
+        Volume.__init__(shape,dimension,placement,material)
         print str(self)
         
     def propagate(inrays) :        
@@ -51,7 +34,7 @@ class PlaneSurface(Volume) :
            print "Refract"
 
     def __str__(self) :
-        return "PlaneSurface("+Volume.__str__(self)+")"
+        return "PlaneSurface("+str(Volume)+")"
             
 class SphericalSurface(Volume) :
     def __init__(self,shape,dimension,placement,material,radcurv) :
