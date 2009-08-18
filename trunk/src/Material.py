@@ -2,16 +2,20 @@ import pylab as pl
 
 class Material :
 
-    glass  = 1
-    mirror = 2
-    
-    def __init__(self, materialtype) :
+    mirror  = 1
+    refract = 2
+
+    def __init__(self, type, data = None) :
+
+        self.type = type
+        if self.type == self.refract :
+            self.n = data
+        
         pass
-#        if materialtype[0] == self.glass : 
-#            self.refractiveindex = 0.0 
-#        else if materialtype[0] == self.mirror :
-#            self.refractiveindex = materialtype[1]
     
     def __str__(self) :
-        s =  'Material                 :'
+        s =  'Material                 : '+str(self.type)+'\n'
+        if self.type == self.refract :
+            s = 'Material                 : '+str(self.n)
+        
         return s

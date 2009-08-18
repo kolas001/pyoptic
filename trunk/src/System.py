@@ -40,18 +40,21 @@ def exampleSystem() :
     lpos = [0,0,0.20]
     ldir = [0,0,1]
     ldim = [0.05,0.05,0.01]
-    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material((Material.glass,1.5)),20.0)
+    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.5),20.0)
     
     # plane surface
     ppos = [0,0,0.25]
     pdir = [0,0,1]
     pdim = [0.05,0.05,0.01]
-    s2 = PlaneSurface("plane 1",Volume.circ,pdim,Placement(ppos,pdir),Material((Material.glass,1.0)))
+    s2 = PlaneSurface("plane 1",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
         
     # system
     s = System()
     s.append(s0)
     s.append(s1)
     s.append(s2)
+
+    # ray trace through system
+    
 
     return s
