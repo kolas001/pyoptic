@@ -78,7 +78,7 @@ class SphericalSurface(Volume) :
         b   = 2*pl.dot(ray.p0,ray.d)
         a   = 1 
         qs  = b**2-4*a*c
-        if qs = 0 :
+        if qs == 0 :
             lam = -b/(2*a)
         elif qs < 0 :
             lam = None
@@ -126,7 +126,7 @@ class OddAsphericalSurface(Volume) :
         print 'AsphericalSurface.__init__>'
         self.volume = volume
 
-class ThinLens(Voluce) :
+class ThinLens(Volume) :
     def __init__(self,volume) :
         print 'ThisLens.__init__>'
 
