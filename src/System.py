@@ -57,15 +57,16 @@ def exampleSystem() :
 
     # ray trace through system
     r = s[0].nextRay()
+    rl = s.propagate()
     while r != None :
+        rl.append(r)
         r1 = s[1].propagate(s[0],r)
         print r
         print r1[0]
         r = s[0].nextRay()
 
-    d = Display3D(s,0)
+    d = Display3D(s,rl)
     d.Draw()
 
     return s
-
 
