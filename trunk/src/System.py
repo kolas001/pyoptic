@@ -4,6 +4,7 @@ from Placement import *
 from Source    import *
 from Material  import *
 from Elements  import *
+from Display3D import *
 
 # Complete optical system
 class System(list) : 
@@ -37,10 +38,10 @@ def exampleSystem() :
     s0 = Source("light source",Placement(spos,sdir))
 
     # curved surface 
-    lpos = [0,0,0.20]
+    lpos = [0,0,0.2]
     ldir = [0,0,1]
     ldim = [0.05,0.05,0.01]
-    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.5),20.0)
+    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.5),0.5)
     
     # plane surface
     ppos = [0,0,0.25]
@@ -55,6 +56,16 @@ def exampleSystem() :
     s.append(s2)
 
     # ray trace through system
-    
+    r = s[0].nextRay()
+    while r != None :
+        r1 = s[1].propagate(s[0],r)
+        print r
+        print r1[0]
+        r = s[0].nextRay()
+
+    d = Display3D(s,0)
+    d.Draw()
 
     return s
+
+
