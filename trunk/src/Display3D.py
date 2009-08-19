@@ -1,29 +1,37 @@
 from Elements import *
 from Source import *
 
-from enthought.mayavi import mlab
+from enthought.tvtk.tools import mlab
 from enthought.tvtk.tools import visual
 
 class Display3D :
     def __init__(self,s,r) :
         self.s = s
         self.r = r
-        self.f = mlab.figure(size=(500,500))
-        visual.set_viewer(self.f)
+        self.f = mlab.figure()
 
-    def Draw(self) :
+    def Draw(self) :        
+        # loop over optical elements
         for e in self.s :
             c = visual.color.blue
             if type(e) == Source :
                 c = visual.color.red
                 
-            visual.box(width =e.dimension[2], 
-                       height=e.dimension[0],  
-                       length=e.dimension[0],
-                       x     =e.placement.location[0],
-                       y     =e.placement.location[1],
-                       z     =e.placement.location[2],
-                       representation='w',
-                       color = c)                       
-        pass
+#            b = visual.box(width =e.dimension[2], 
+#                          height=e.dimension[0],  
+#                          length=e.dimension[0],
+#                          x     =e.placement.location[0],
+#                          y     =e.placement.location[1],
+#                          z     =e.placement.location[2],
+#                          representation='w',
+#                          color = c)                       
+#            self.f.add(b)
+
+        # loop over rays
+        for r in self.r :
+            print r.p0
+            print r.p1
+            l = mlab.Line3([r.p0,r.p1],radius=0.0001);
+            self.f.add(l)
+
     
