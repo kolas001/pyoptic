@@ -2,6 +2,7 @@ import pylab as pl
 
 from Material  import *
 from Placement import *
+from Ray       import *
 
 class Volume() :
     ''' Orientable volume, base class to describe extent, material and orientation of a volume containing ''' 
@@ -52,11 +53,15 @@ class SphericalSurface(Volume) :
         Volume.__init__(self,name,shape,dimension,placement,material)
         self.radcurv   = radcurv
 
+
     def propagate(self,previous,inrays) :
+        if type(inrays) != list :
+            inrays = [inrays]
+            
         outrays = []
         
         for ray in inrays :            
-            print 'Reflect' 
+            print 'Refract' 
             # compute intersection
             self.intersection(ray)
                     
@@ -69,14 +74,19 @@ class SphericalSurface(Volume) :
             # append rays
             outrays.append(outray)
             
-
-        return self.outrays
-
+        return outrays
 
     def intersection(self,ray) :
-        c   = pl.dot(ray.p0,ray.p0)-self.radcurv**2
-        b   = 2*pl.dot(ray.p0,ray.d)
-        a   = 1 
+#        c   = pl.dot(ray.p0,ray.p0)-self.radcurv**2-pl.dot(self.placement.location,self.placement.location)
+#        b   = 2*pl.dot(ray.p0,ray.d)
+#        a   = 1 
+        # centre vector
+        cv = self.placement.location+self.placement.orientation*self.radcurv
+        # coefficients of quadratic equation
+        a = 1 
+        b = 2*pl.dot(ray.d,ray.p0-cv)
+        c = -2*pl.dot(ray.p0,cv)+pl.dot(cv,cv)-self.radcurv**2
+        print cv
         qs  = b**2-4*a*c
         if qs == 0 :
             lam = -b/(2*a)
@@ -85,18 +95,17 @@ class SphericalSurface(Volume) :
         else :
             lamp = (-b+pl.sqrt(b**2-4*a*c))/(2*a)
             lamn = (-b-pl.sqrt(b**2-4*a*c))/(2*a)
-            pd   = pl.norm(ray.propagate(lamp)-ray.p0)
-            nd   = pl.norm(ray.propagate(lamn)-ray.p0)
-            if vp < pd :
-                lam = lamp
-            else :
-                lam = lamn
+            pd   = pl.linalg.norm(ray.propagate(lamp)-ray.p0)
+            nd   = pl.linalg.norm(ray.propagate(lamn)-ray.p0)
+            lam = min(lamp,lamn)
 
+            print lamn,lamp,lam
+            
             # assign intersection
-        ray.p1 = pl.propagate(lam)
+        ray.p1 = ray.propagate(lam)
     
-    def surfaceNormal(self, point) :
-        sn = pl.norm(ray.p1-self.placement.location)
+    def surfaceNormal(self, p1) :
+        sn = pl.linalg.norm(p1-self.placement.location)
         return sn
 
     def reflection(self,ray) :
@@ -134,7 +143,6 @@ def snell(ray,sn,material1,material2) :
     n1 = material1.n
     n2 = material2.n
 
-    st1 = pl.sin(t)
     nr = n1/n2
     dp  = pl.dot(ray.d,sn)
     gam = ((nr*dp)**2-(n1/n2)+1)**0.5 - nr*dp
