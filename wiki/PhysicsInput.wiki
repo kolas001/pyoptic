@@ -1,0 +1,5 @@
+= Physics Input =
+
+Required physics calculations are numerous (more details can be found at the project homepage)
+  * Line solid body intersection
+  * 
