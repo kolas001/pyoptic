@@ -26,23 +26,48 @@ class Volume() :
         s += 'Volume.material          : \n'+str(self.material)
         return s
 
+class OpticalSurface(Volume) :
+    def __init__(self) :
+        pass
+
+    def proagate(self,previous,inray) :
+        # compute intersection
+        self.intersection(inray)                    
+        # compute normal
+        sn = self.surfaceNormal(inray.p1)            
+        # compute out going ray
+        outray = snell(inray,sn,previous.material,self.material)
         
+    def intersection(self,inray) :
+        pass
+    def surfaceNormal(self,inray) :
+        pass
+
 class PlaneSurface(Volume) :
     def __init__(self,name,shape,dimension,placement,material) :
         Volume.__init__(self,name,shape,dimension,placement,material)
         
-    def propagate(self,previous,inrays) :        
-        outrays = []
-        
-        for ray in inrays :
+    def propagate(self,previous,inray) :        
             
-            print 'Reflect'            
+        outray = inray
 
+        # compute intersection
+        self.intersection(inray)                    
+        # compute normal
+        sn = self.surfaceNormal(inray.p1)            
+        # compute out going ray
+        outray = snell(inray,sn,previous.material,self.material)
 
-            print 'Refract'
+        return outray
 
-        return outrays
+    def intersection(self,inray) :
+        
+        pass
 
+    def surfaceNormal(self,inray) :
+        return self.placement.orientation
+    
+    
     def __str__(self) :
         s  = 'PlaneSurface             : '+self.name+'\n'
         s += 'PlaneSurface.Volume      :\n'+Volume.__str__(self)
@@ -54,27 +79,23 @@ class SphericalSurface(Volume) :
         self.radcurv   = radcurv
 
 
-    def propagate(self,previous,inrays) :
-        if type(inrays) != list :
-            inrays = [inrays]
+    def propagate(self,previous,inray) :
+#        if type(inrays) != list :
+#            inrays = [inrays]
             
         outrays = []
         
-        for ray in inrays :            
-            print 'Refract' 
-            # compute intersection
-            self.intersection(ray)
-                    
-            # compute normal
-            sn = self.surfaceNormal(ray.p1)
-            
-            # compute out going ray
-            outray = snell(ray,sn,previous.material,self.material)
+        # compute intersection
+        self.intersection(inray)                    
+        # compute normal
+        sn = self.surfaceNormal(inray.p1)            
+        # compute out going ray
+        outray = snell(inray,sn,previous.material,self.material)
 
-            # append rays
-            outrays.append(outray)
+        # append rays
+        outrays.append(outray)
             
-        return outrays
+        return outray
 
     def intersection(self,ray) :
 #        c   = pl.dot(ray.p0,ray.p0)-self.radcurv**2-pl.dot(self.placement.location,self.placement.location)

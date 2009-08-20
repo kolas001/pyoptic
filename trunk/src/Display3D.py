@@ -1,3 +1,4 @@
+from System import *
 from Elements import *
 from Source import *
 
@@ -11,6 +12,7 @@ class Display3D :
         self.f = mlab.figure()
 
     def Draw(self) :        
+
         # loop over optical elements
         for e in self.s :
             c = visual.color.blue
@@ -28,10 +30,14 @@ class Display3D :
 #            self.f.add(b)
 
         # loop over rays
-        for r in self.r :
-            print r.p0
-            print r.p1
-            l = mlab.Line3([r.p0,r.p1],radius=0.0001);
-            self.f.add(l)
+        for r in pl.flatten(self.r) :
+            if r.p1 != None :
+                l = mlab.Line3([r.p0,r.p1],radius=0.0001);
+                self.f.add(l)
 
+def Display3DTest() :
+    s = SystemTest()
+    r = s.propagate()
+    d = Display3D(s,r)
+    d.Draw()
     
