@@ -61,9 +61,10 @@ class PlaneSurface(Volume) :
         return outray
 
     def intersection(self,inray) :
+        lam = pl.linalg.dot(self.placement.location,inray.p0)/pl.linalg.dot(self.placement.orientation,self.placement.location)
+        inray.p1 = inray.propagate(lam)
         
-        pass
-
+    
     def surfaceNormal(self,inray) :
         return self.placement.orientation
     
@@ -120,13 +121,13 @@ class SphericalSurface(Volume) :
             nd   = pl.linalg.norm(ray.propagate(lamn)-ray.p0)
             lam = min(lamp,lamn)
 
-            print lamn,lamp,lam
-            
             # assign intersection
         ray.p1 = ray.propagate(lam)
     
     def surfaceNormal(self, p1) :
-        sn = pl.linalg.norm(p1-self.placement.location)
+        cv = self.placement.location+self.placement.orientation*self.radcurv
+        sn = p1-cv
+        sn = -sn/pl.linalg.norm(sn)
         return sn
 
     def reflection(self,ray) :
@@ -168,8 +169,15 @@ def snell(ray,sn,material1,material2) :
     dp  = pl.dot(ray.d,sn)
     gam = ((nr*dp)**2-(n1/n2)+1)**0.5 - nr*dp
     # new direction
-    d2  = ray.d+gam*sn
+    d2  = ray.d*n1/n2+gam*sn
+    d2 = d2/pl.linalg.norm(d2)
     r = Ray(ray.p1,d2)
+
+    print 'snell> in\n',ray
+    print 'snell> normal ',sn
+    print 'snell> material 1',material1
+    print 'snell> material 2', material2
+    print 'snell> out',r
     return r
     
 def reflect(ray,sn) :

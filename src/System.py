@@ -39,9 +39,9 @@ class System(list) :
                     print 'System.propagate> element=',j
                     rp = self[j].propagate(self[j-1],raybranch[j-1])                    
                     raybranch.append(rp)
-                    print raybranch[j-1]
-                    print raybranch[j]
                 raytree.append(raybranch)
+                for r  in pl.flatten(raybranch) :
+                    print r
                 i += 1
         except StopIteration :
             pass
@@ -67,7 +67,7 @@ def SystemTest() :
     lpos = [0,0,0.05]
     ldir = [0,0,1]
     ldim = [0.05,0.05,0.01]
-    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.5),0.5)
+    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.5),0.03)
     
     # plane surface
     ppos = [0,0,0.07]
@@ -76,7 +76,7 @@ def SystemTest() :
     s2 = PlaneSurface("plane 1",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
     
     # plane surface
-    ppos = [0,0,0.25]
+    ppos = [0,0,0.30]
     pdir = [0,0,1]
     pdim = [0.05,0.05,0.01]
     s3 = PlaneSurface("plane 2",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))

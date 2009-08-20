@@ -30,10 +30,13 @@ class Display3D :
 #            self.f.add(b)
 
         # loop over rays
+        print self.r
         for r in pl.flatten(self.r) :
             if r.p1 != None :
-                l = mlab.Line3([r.p0,r.p1],radius=0.0001);
-                self.f.add(l)
+                print 'line'
+                print r.p0
+                print r.p1                
+                self.f.add(mlab.Line3([r.p0,r.p1],radius=0.001,representation='w'))
 
 def Display3DTest() :
     s = SystemTest()
