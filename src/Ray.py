@@ -26,3 +26,6 @@ class Ray :
         s += 'Ray p1                   : '+str(self.p1)+'\n'
         s += 'Ray d                    : '+str(self.d)
         return s
+
+def RayExample() :
+    return Ray([0,0,0],[0,0,1])
