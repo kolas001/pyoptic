@@ -1,0 +1,10 @@
+= Programming conventions =
+  * Pythonic as possible (this is a learning project)
+
+class Example :
+      def __init__(self) :
+      	  self.variable = 0
+      	  pass
+      def methodOfExample(self) :
+      	  pass 
+
