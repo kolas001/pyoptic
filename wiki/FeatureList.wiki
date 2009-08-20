@@ -1,4 +1,4 @@
-# Feature list
+
 
 = Version 1 =
   * Full ray tracking (without approximation) 
