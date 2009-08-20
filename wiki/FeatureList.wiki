@@ -1,0 +1,10 @@
+# Feature list
+
+= Version 1 =
+  * Full ray tracking (without approximation) 
+  * 3D visualisation of system and light propagation
+
+Required elements
+  * Spherical lens/mirror
+  * Plane mirror
+  * Odd/Even Asphere 
