@@ -6,12 +6,14 @@ Required features
   * Aberration analysis
   * 3D visualization of system and light propagation
   * gABCD laser propagation
+  * wavelength dependence (dispersion) 
 
 Optical calculations 
   * Focal length
   * Magnification
 
 Required surfaces
+  * Conic section surface
   * Spherical surface 
   * Parabolic surface
   * Hyperbolic surface
