@@ -8,10 +8,7 @@ class Material :
     def __init__(self, type, data = None) :
 
         self.type = type
-        if self.type == self.refract :
-            self.n = data
-        
-        pass
+        self.n = data
     
     def __str__(self) :
         s =  'Material                 : '+str(self.type)+'\n'

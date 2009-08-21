@@ -88,9 +88,16 @@ def SystemTest() :
     
     # plane surface
     ppos = [0,0,0.50]
-    pdir = [0,0,1]
+    pdir = pl.array([0,-1,1])
+    pdir = pdir/pl.linalg.norm(pdir)
     pdim = [0.05,0.05,0.01]
-    s5 = PlaneSurface("plane 3",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
+    s5 = PlaneSurface("plane 3",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.mirror,1.0))
+
+    # plane surface
+    ppos = [0,0.15,0.50]
+    pdir = [0,1,0]
+    pdim = [0.05,0.05,0.01]
+    s6 = PlaneSurface("plane 4",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
 
     # system
     s = System()
@@ -100,6 +107,7 @@ def SystemTest() :
     s.append(s3)
     s.append(s4)
     s.append(s5)
+    s.append(s6)
 
     return s
 
