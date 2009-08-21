@@ -1,9 +1,15 @@
 = Version 1 =
-  * Full ray tracking (without approximation) 
+
+Required features
+  * Full ray tracking (without approximation paraxial etc) 
   * Optical system characterization 
   * Aberration analysis
   * 3D visualization of system and light propagation
   * gABCD laser propagation
+
+Optical calculations 
+  * Focal length
+  * Magnification
 
 Required elements
   * Spherical surface 
