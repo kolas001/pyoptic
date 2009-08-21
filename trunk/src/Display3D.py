@@ -11,14 +11,17 @@ class Display3D :
         self.r = r
         self.f = mlab.figure()
 
-    def Draw(self) :        
+        self.e3d = []
 
+    def Draw(self) :        
         # loop over optical elements
         for e in self.s :
-            c = visual.color.blue
-            if type(e) == Source :
-                c = visual.color.red
-                
+            x,y,z = e.surface()
+            edo = mlab.Surf(x,y,z)
+            edo.trait_set(representation='wireframe')
+            self.f.add(edo)
+            self.e3d.append(edo)
+            
 #            b = visual.box(width =e.dimension[2], 
 #                          height=e.dimension[0],  
 #                          length=e.dimension[0],
@@ -36,11 +39,18 @@ class Display3D :
                 print 'line'
                 print r.p0
                 print r.p1                
-                self.f.add(mlab.Line3([r.p0,r.p1],radius=0.001,representation='w'))
+                # ray display object
+
+                rdo = mlab.Line3([r.p0,r.p1],radius=0.0005,representation='wireframe')
+#                rdo.representation = 'wireframe'
+                self.f.add(rdo)
+                self.e3d.append(rdo)
 
 def Display3DTest() :
     s = SystemTest()
     r = s.propagate()
     d = Display3D(s,r)
     d.Draw()
+    return d
+
     
