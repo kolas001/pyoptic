@@ -46,11 +46,17 @@ class OpticalSurface(Volume) :
 class PlaneSurface(Volume) :
     def __init__(self,name,shape,dimension,placement,material) :
         Volume.__init__(self,name,shape,dimension,placement,material)
+
+    def surface(self) :
+        x = pl.arange(-self.dimension[0],self.dimension[0]+1e-8,self.dimension[0]/5)
+        y = pl.arange(-self.dimension[1],self.dimension[1]+1e-8,self.dimension[1]/5)
+        xx,yy = pl.meshgrid(x,y)
+        zz = 1/self.placement.orientation[2]*(pl.linalg.dot(self.placement.orientation,self.placement.location)-self.placement.orientation[0]*xx-self.placement.orientation[1]*yy)
+        
+        return [xx,yy,zz]        
         
     def propagate(self,previous,inray) :        
-            
-        outray = inray
-
+        
         # compute intersection
         self.intersection(inray)                    
         # compute normal
@@ -61,10 +67,11 @@ class PlaneSurface(Volume) :
         return outray
 
     def intersection(self,inray) :
-        lam = pl.linalg.dot(self.placement.location,inray.p0)/pl.linalg.dot(self.placement.orientation,self.placement.location)
+#        lam = pl.linalg.dot(self.placement.location,inray.p0)/pl.linalg.dot(self.placement.orientation,self.placement.location)
+        lam = pl.linalg.dot(self.placement.location-inray.p0,self.placement.orientation)/pl.linalg.dot(self.placement.orientation,inray.d)
+        print 'PlaneSurface.intersection',lam
         inray.p1 = inray.propagate(lam)
-        
-    
+                
     def surfaceNormal(self,inray) :
         return self.placement.orientation
     
@@ -79,11 +86,16 @@ class SphericalSurface(Volume) :
         Volume.__init__(self,name,shape,dimension,placement,material)
         self.radcurv   = radcurv
 
+    def surface(self) :
+        x = pl.arange(-self.dimension[0],self.dimension[0]+1e-8,self.dimension[0]/5)
+        y = pl.arange(-self.dimension[1],self.dimension[1]+1e-8,self.dimension[1]/5)
+        xx,yy = pl.meshgrid(x,y)
+        cv = self.placement.location+self.placement.orientation*self.radcurv        
+        zz = -pl.sign(self.radcurv)*pl.sqrt(self.radcurv**2-(xx-cv[0])**2-(yy-cv[1])**2)+cv[2]
+        
+        return [xx,yy,zz]
 
     def propagate(self,previous,inray) :
-#        if type(inrays) != list :
-#            inrays = [inrays]
-            
         outrays = []
         
         # compute intersection
@@ -93,9 +105,6 @@ class SphericalSurface(Volume) :
         # compute out going ray
         outray = snell(inray,sn,previous.material,self.material)
 
-        # append rays
-        outrays.append(outray)
-            
         return outray
 
     def intersection(self,ray) :
@@ -105,10 +114,14 @@ class SphericalSurface(Volume) :
         # centre vector
         cv = self.placement.location+self.placement.orientation*self.radcurv
         # coefficients of quadratic equation
-        a = 1 
-        b = 2*pl.dot(ray.d,ray.p0-cv)
-        c = -2*pl.dot(ray.p0,cv)+pl.dot(cv,cv)-self.radcurv**2
-        print cv
+#        a = 1 
+#        b = 2*pl.dot(ray.d,ray.p0-cv)
+#        c = -2*pl.dot(ray.p0,cv)+pl.dot(cv,cv)-self.radcurv**2
+        dv = ray.p0 - self.placement.orientation*self.radcurv - self.placement.location        
+        a = 1
+        b = 2*pl.linalg.dot(ray.d,dv)
+        c = pl.linalg.dot(dv,dv)-self.radcurv**2
+        
         qs  = b**2-4*a*c
         if qs == 0 :
             lam = -b/(2*a)
@@ -119,15 +132,22 @@ class SphericalSurface(Volume) :
             lamn = (-b-pl.sqrt(b**2-4*a*c))/(2*a)
             pd   = pl.linalg.norm(ray.propagate(lamp)-ray.p0)
             nd   = pl.linalg.norm(ray.propagate(lamn)-ray.p0)
-            lam = min(lamp,lamn)
-
+#            lam = min(lamp,lamn)
+            
+            if self.radcurv > 0 :
+                lam = min(lamp,lamn)
+            elif self.radcurv < 0 :
+                lam = max(lamp,lamn)
+            
             # assign intersection
         ray.p1 = ray.propagate(lam)
     
     def surfaceNormal(self, p1) :
         cv = self.placement.location+self.placement.orientation*self.radcurv
-        sn = p1-cv
-        sn = -sn/pl.linalg.norm(sn)
+#        sn = p1-cv
+#        sn = -sn/pl.linalg.norm(sn)
+        sn = pl.sign(self.radcurv)*(cv-p1)
+        sn = sn/pl.linalg.norm(sn)
         return sn
 
     def reflection(self,ray) :
@@ -165,18 +185,26 @@ def snell(ray,sn,material1,material2) :
     n1 = material1.n
     n2 = material2.n
 
-    nr = n1/n2
-    dp  = pl.dot(ray.d,sn)
-    gam = ((nr*dp)**2-(n1/n2)+1)**0.5 - nr*dp
-    # new direction
-    d2  = ray.d*n1/n2+gam*sn
-    d2 = d2/pl.linalg.norm(d2)
+#    nr = n1/n2
+#    dp  = pl.dot(ray.d,sn)
+#    gam = ((nr*dp)**2-(n1/n2)+1)**0.5 - nr*dp
+#    # new direction
+#    d2  = ray.d*nr+gam*sn
+#    d2 = d2/pl.linalg.norm(d2)
+ #   r = Ray(ray.p1,d2)
+    nr = n1/n2    
+    ct1 = -pl.linalg.dot(sn,ray.d)
+    ct2 = pl.sqrt(1-(nr**2)*(1-ct1**2))
+    if ct1 < 0 :
+        ct2 = -ct2
+    d2 = nr*ray.d+(nr*ct1-ct2)*sn
     r = Ray(ray.p1,d2)
-
     print 'snell> in\n',ray
     print 'snell> normal ',sn
     print 'snell> material 1',material1
-    print 'snell> material 2', material2
+    print 'snell> material 2',material2
+    print 'snell> cos theta',ct1
+    print 'snell> cos theta',ct2    
     print 'snell> out',r
     return r
     

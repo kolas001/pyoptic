@@ -62,12 +62,13 @@ def SystemTest() :
     spos = [0,0,0]
     sdir = [0,0,1]
     s0 = Source("light source",Placement(spos,sdir))
+    s0.exampleRays(0.04)
 
     # curved surface 
     lpos = [0,0,0.05]
     ldir = [0,0,1]
     ldim = [0.05,0.05,0.01]
-    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.5),0.03)
+    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.4),0.08)
     
     # plane surface
     ppos = [0,0,0.07]
@@ -76,7 +77,7 @@ def SystemTest() :
     s2 = PlaneSurface("plane 1",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
     
     # plane surface
-    ppos = [0,0,0.30]
+    ppos = [0,0,0.32]
     pdir = [0,0,1]
     pdim = [0.05,0.05,0.01]
     s3 = PlaneSurface("plane 2",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
