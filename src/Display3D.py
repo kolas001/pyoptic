@@ -17,6 +17,8 @@ class Display3D :
         # loop over optical elements
         for e in self.s :
             x,y,z = e.surface()
+            print e.name
+            print z
             edo = mlab.Surf(x,y,z)
             edo.trait_set(representation='wireframe')
             self.f.add(edo)

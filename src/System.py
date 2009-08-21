@@ -40,8 +40,6 @@ class System(list) :
                     rp = self[j].propagate(self[j-1],raybranch[j-1])                    
                     raybranch.append(rp)
                 raytree.append(raybranch)
-                for r  in pl.flatten(raybranch) :
-                    print r
                 i += 1
         except StopIteration :
             pass
@@ -59,16 +57,16 @@ def SystemTest() :
     print "System:SystemTest>"
 
     # source 
-    spos = [0,0,0]
-    sdir = [0,0,1]
-    s0 = Source("light source",Placement(spos,sdir))
+    ppos = [0,0,0]
+    pdir = [0,0,1]
+    s0 = Source("light source",Placement(ppos,pdir))
     s0.exampleRays(0.04)
 
     # curved surface 
-    lpos = [0,0,0.05]
-    ldir = [0,0,1]
-    ldim = [0.05,0.05,0.01]
-    s1 = SphericalSurface("spherical 1", Volume.circ,ldim,Placement(lpos,ldir),Material(Material.refract,1.4),0.08)
+    ppos = [0,0,0.05]
+    pdir = [0,0,1]
+    pdim = [0.05,0.05,0.01]
+    s1 = SphericalSurface("spherical 1", Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.4),0.08)
     
     # plane surface
     ppos = [0,0,0.07]
@@ -77,10 +75,22 @@ def SystemTest() :
     s2 = PlaneSurface("plane 1",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
     
     # plane surface
-    ppos = [0,0,0.32]
+    ppos = [0,0,0.40]
     pdir = [0,0,1]
     pdim = [0.05,0.05,0.01]
-    s3 = PlaneSurface("plane 2",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
+    s3 = PlaneSurface("plane 2",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.4))
+
+    # curved surface
+    ppos = [0,0,0.42]
+    pdir = [0,0,1]
+    pdim = [0.05,0.05,0.01]
+    s4 = SphericalSurface("spherical 2", Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0),-0.08)
+    
+    # plane surface
+    ppos = [0,0,0.50]
+    pdir = [0,0,1]
+    pdim = [0.05,0.05,0.01]
+    s5 = PlaneSurface("plane 3",Volume.circ,pdim,Placement(ppos,pdir),Material(Material.refract,1.0))
 
     # system
     s = System()
@@ -88,6 +98,8 @@ def SystemTest() :
     s.append(s1)
     s.append(s2)
     s.append(s3)
+    s.append(s4)
+    s.append(s5)
 
     return s
 
