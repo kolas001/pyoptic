@@ -61,8 +61,11 @@ class PlaneSurface(Volume) :
         self.intersection(inray)                    
         # compute normal
         sn = self.surfaceNormal(inray.p1)            
-        # compute out going ray
-        outray = snell(inray,sn,previous.material,self.material)
+        
+        if self.material.type == Material.mirror :
+            outray = reflect(inray,sn)
+        elif self.material.type == Material.refract :
+            outray = snell(inray,sn,previous.material,self.material)            
 
         return outray
 
@@ -102,21 +105,18 @@ class SphericalSurface(Volume) :
         self.intersection(inray)                    
         # compute normal
         sn = self.surfaceNormal(inray.p1)            
+        if self.material.type == Material.mirror :
+            outray = reflect(inray,sn)
+        elif self.material.type == Material.refract :
+            outray = snell(inray,sn,previous.material,self.material)            
+
         # compute out going ray
-        outray = snell(inray,sn,previous.material,self.material)
+
 
         return outray
 
     def intersection(self,ray) :
-#        c   = pl.dot(ray.p0,ray.p0)-self.radcurv**2-pl.dot(self.placement.location,self.placement.location)
-#        b   = 2*pl.dot(ray.p0,ray.d)
-#        a   = 1 
-        # centre vector
         cv = self.placement.location+self.placement.orientation*self.radcurv
-        # coefficients of quadratic equation
-#        a = 1 
-#        b = 2*pl.dot(ray.d,ray.p0-cv)
-#        c = -2*pl.dot(ray.p0,cv)+pl.dot(cv,cv)-self.radcurv**2
         dv = ray.p0 - self.placement.orientation*self.radcurv - self.placement.location        
         a = 1
         b = 2*pl.linalg.dot(ray.d,dv)
