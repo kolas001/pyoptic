@@ -26,6 +26,9 @@ class Volume() :
         s += 'Volume.material          : \n'+str(self.material)
         return s
 
+############################################################################
+# General optical surface
+############################################################################            
 class OpticalSurface(Volume) :
     def __init__(self) :
         pass
@@ -43,6 +46,9 @@ class OpticalSurface(Volume) :
     def surfaceNormal(self,inray) :
         pass
 
+############################################################################
+# Plane surface
+############################################################################            
 class PlaneSurface(Volume) :
     def __init__(self,name,shape,dimension,placement,material) :
         Volume.__init__(self,name,shape,dimension,placement,material)
@@ -83,7 +89,10 @@ class PlaneSurface(Volume) :
         s  = 'PlaneSurface             : '+self.name+'\n'
         s += 'PlaneSurface.Volume      :\n'+Volume.__str__(self)
         return s
-            
+
+############################################################################
+# SphericalSurface
+############################################################################            
 class SphericalSurface(Volume) :
     def __init__(self,name,shape,dimension,placement,material,radcurv) :
         Volume.__init__(self,name,shape,dimension,placement,material)
@@ -150,37 +159,56 @@ class SphericalSurface(Volume) :
         sn = sn/pl.linalg.norm(sn)
         return sn
 
-    def reflection(self,ray) :
-        pass 
-
-    def refraction(self,previous, ray) :
-        pass
-    
     def __str__(self) :
         s  = 'SphericalSurface         : '+self.name+'\n'
         s += 'SphericalSurface.volume  : \n'+Volume.__str__(self)+'\n'
         s += 'SphericalSurface.radcurv : '+str(self.radcurv)+'\n'
         return s
 
+############################################################################
+# ParabolicSurface
+############################################################################
+class ParabolicSurface(Volume) :
+    def __init__(self,name,shape,dimension,placement,material,a,b) :
+        pass
+    
+    def surfaceNorma(self, p1) :
+        pass
+
+############################################################################
+# Cylindrical surface
+############################################################################                
 class CylindricalSurface(Volume) :
     def __init__(self,volume) :
         print 'CylindricalSurface.__init__>'
         self.volume = volume
 
+############################################################################
+# EvenAsphericalSurface
+############################################################################            
 class EvenAsphericalSurface(Volume) :
     def __init__(self,volume) :
         print 'AsphericalSurface.__init__>'
         self.volume = volume
 
+############################################################################
+# OddAsphericalSurface
+############################################################################            
 class OddAsphericalSurface(Volume) :
     def __init__(self,volume) :
         print 'AsphericalSurface.__init__>'
         self.volume = volume
 
+############################################################################
+# ThinLens
+############################################################################            
 class ThinLens(Volume) :
     def __init__(self,volume) :
         print 'ThisLens.__init__>'
 
+############################################################################
+# Snells' law 
+############################################################################            
 def snell(ray,sn,material1,material2) :
     n1 = material1.n
     n2 = material2.n
@@ -208,6 +236,9 @@ def snell(ray,sn,material1,material2) :
     print 'snell> out',r
     return r
     
+############################################################################
+# Reflection law
+############################################################################            
 def reflect(ray,sn) :
     d2 = ray.d-2*pl.dot(ray.d,sn)*sn
     r = Ray(ray.p1,d2)

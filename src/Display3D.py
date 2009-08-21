@@ -24,16 +24,6 @@ class Display3D :
             self.f.add(edo)
             self.e3d.append(edo)
             
-#            b = visual.box(width =e.dimension[2], 
-#                          height=e.dimension[0],  
-#                          length=e.dimension[0],
-#                          x     =e.placement.location[0],
-#                          y     =e.placement.location[1],
-#                          z     =e.placement.location[2],
-#                          representation='w',
-#                          color = c)                       
-#            self.f.add(b)
-
         # loop over rays
         print self.r
         for r in pl.flatten(self.r) :
