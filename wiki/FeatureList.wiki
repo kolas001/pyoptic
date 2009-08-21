@@ -1,11 +1,12 @@
 = Version 1 =
   * Full ray tracking (without approximation) 
-  * Optical system characterisation 
-  * Aberation analysis
-  * 3D visualisation of system and light propagation
+  * Optical system characterization 
+  * Aberration analysis
+  * 3D visualization of system and light propagation
   * gABCD laser propagation
 
 Required elements
-  * Spherical lens/mirror
-  * Plane mirror
-  * Odd/Even Asphere 
+  * Spherical surface 
+  * Parabolic surface
+  * Plane surface
+  * Odd/Even Aspherical surface
