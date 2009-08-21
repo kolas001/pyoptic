@@ -11,8 +11,14 @@ Optical calculations
   * Focal length
   * Magnification
 
-Required elements
+Required surfaces
   * Spherical surface 
   * Parabolic surface
+  * Hyperbolic surface
   * Plane surface
   * Odd/Even Aspherical surface
+
+Required elements
+  * Thin lens
+  * Thick lens
+  * Prism
