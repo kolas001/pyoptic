@@ -1,9 +1,12 @@
 import pylab as pl
 
+############################################################################
+# Two dimensional Intensity distribution (plane uniform grid)
+############################################################################            
 class Intensity2D :
     def __init__(self, 
-                 nx = 64, startx = -1e-3, endx = 1e-3, 
-                 ny = 64, starty = -1e-3, endy = 1e-3, 
+                 nx = 128, startx = -1e-3, endx = 1e-3, 
+                 ny = 128, starty = -1e-3, endy = 1e-3, 
                  wl=532e-9) :
         self.nx     = nx
         self.startx = pl.double(startx)
@@ -28,7 +31,7 @@ class Intensity2D :
         self.ny = len(self.y)
         [self.xgrid, self.ygrid] = pl.meshgrid(self.x,self.y)
         print "Intensity:Intensity2D:grid>",self.nx,self.ny,self.dx,self.dy
-        
+        self.i = pl.zeros((self.nx,self.ny))
 
     def makeGaussian(self,mx,my,sx,sy) :
         print "Intensity:Intensity2D:makeGaussian",mx,my,sx,sy
@@ -52,7 +55,13 @@ class Intensity2D :
                                (self.xgrid<=rx/2+mx)  & 
                                (self.ygrid>=-ry/2+my) &
                                (self.ygrid<=ry/2+my) )
-        
+
+    def makeHermiteGaussian(self) :
+        pass
+    
+    def makeLagurreGaussian(self) :
+        pass
+    
     def plot(self,f) :
         print "Intensity:Intensity2D:plot"
         self.project()
@@ -64,7 +73,7 @@ class Intensity2D :
         pl.contourf(self.xgrid,self.ygrid,self.i*self.i.conj())
         pl.xlim(self.startx,self.endx)
         pl.ylim(self.starty,self.endy)
-#        pl.colorbar()
+        pl.colorbar()
         pl.subplot(2,2,2)
         pl.plot(self.yproj,self.y)
         pl.ylim(self.starty,self.endy)
@@ -92,4 +101,62 @@ class Intensity2D :
         self.yrms  = pl.sqrt(pl.sum(self.yproj*self.y**2)/self.sum)
 
         print "Intensity:Intensity2D:calculate ",self.xmean,self.ymean,self.xrms,self.yrms
+
+    def propagate(self, d, type = 1) :
+        if type == 1 : 
+            i = self.fresnelSingleTransform(d)
+        elif type == 2 :
+            i = self.fresnelConvolutionTransform(d)
         
+        return i
+
+    def fresnelSingleTransform(self,d) :
+        i2 = Intensity2D(self.nx,self.startx,self.endx,
+                         self.ny,self.starty,self.endy,
+                         self.wl)
+        u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
+        ftu1p = pl.fftshift(pl.fft2(u1p))
+        u2    = ftu1p*pl.sqrt(1j/(d*self.wl))*pl.exp(1j*pl.pi/(d*self.wl)*(i2.xgrid**2+i2.ygrid**2))
+        i2.i = u2
+        return i2
+
+    def fresnelConvolutionTransform(self,d) :
+        pass
+
+    def applyPhaseMap(self,pm) :
+        pass
+    
+    def applyIntensityMap(self,im) :
+        pass
+
+# 0.1 0.000100000000021 0.000110786458382
+# 0.5 0.000100000000191 0.000552023435068      
+# 1.0 0.000100000005911 0.00110317590594
+# 2.0 
+def IntensityTest(d = 0.1) :
+    i = Intensity2D(128,-0.0041260150266328411,0.0041260150266328411,
+                    128,-0.0041260150266328411,0.0041260150266328411,
+                    532e-9)
+    #    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
+    i.makeGaussian(0,0,0.2e-3,0.2e-3)
+    i.plot(1)
+    i.calculate()
+    i2 = i.propagate(0.1,1)
+    i2.calculate()
+    i2.plot(2)
+    print i.xrms,i2.xrms
+
+#    darray = []
+#    xrmsarray = []
+#    darray.append(0)
+#    xrmsarray.append(i.xrms)
+
+#    drange = pl.arange(0.000000001,0.5,0.005)
+#    for d in drange :
+#        i2 = i.propagate(d,1)
+#        i2.calculate() 
+#        darray.append(d)
+#        xrmsarray.append(i2.xrms)
+#    pl.plot(darray,xrmsarray)
+
+    return i
