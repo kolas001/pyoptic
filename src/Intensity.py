@@ -5,8 +5,8 @@ import pylab as pl
 ############################################################################            
 class Intensity2D :
     def __init__(self, 
-                 nx = 128, startx = -1e-3, endx = 1e-3, 
-                 ny = 128, starty = -1e-3, endy = 1e-3, 
+                 nx = 5012, startx = -1e-3, endx = 1e-3, 
+                 ny = 5012, starty = -1e-3, endy = 1e-3, 
                  wl=532e-9) :
         self.nx     = nx
         self.startx = pl.double(startx)
@@ -104,15 +104,15 @@ class Intensity2D :
 
     def propagate(self, d, type = 1) :
         if type == 1 : 
-            i = self.fresnelSingleTransform(d)
+            i = self.fresnelSingleTransformFW(d)
         elif type == 2 :
+            i = self.fresnelSingleTransformVW(d)
+        elif type == 3 :
             i = self.fresnelConvolutionTransform(d)
         
         return i
 
-    def fresnelSingleTransform(self,d) :
-        
-
+    def fresnelSingleTransformFW(self,d) :
         i2 = Intensity2D(self.nx,self.startx,self.endx,
                          self.ny,self.starty,self.endy,
                          self.wl)
@@ -121,6 +121,27 @@ class Intensity2D :
         u2    = ftu1p*pl.sqrt(1j/(d*self.wl))*pl.exp(1j*pl.pi/(d*self.wl)*(i2.xgrid**2+i2.ygrid**2))
         i2.i = u2
         return i2
+    
+    def fresnelSingleTransformVW(self,d) :
+        # compute new window
+        x2 = self.nx*d*self.wl/(self.endx-self.startx)
+        y2 = self.ny*d*self.wl/(self.endy-self.starty)
+        
+        i2 = Intensity2D(self.nx,-x2/2,x2/2,
+                         self.ny,-y2/2,y2/2,
+                         self.wl)
+        u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
+        ftu1p = pl.fftshift(pl.fft2(u1p))
+        u2    = ftu1p*pl.sqrt(1j/(d*i2.wl))*pl.exp(1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
+        i2.i = u2
+        return i2
+
+        # create new intensity object
+
+        # compute intensity
+
+        
+        pass
 
     def fresnelConvolutionTransform(self,d) :
         pass
@@ -144,19 +165,19 @@ class Intensity2D :
 # 5.0   0.000100162415431 0.00215156828542     0.00212773010505 
 # 6.0   0.000100641977196 0.00257316616299     0.00255234629626
 
-Def IntensityTest(d = 0.1) : 
-    x = pl.sqrt(512*d*532e-9)/2
-    
-    i = Intensity2D(512,-x,x,
-                    512,-x,x,
+def IntensityTest(d = 0.1) : 
+    x = 3e-3
+
+    i = Intensity2D(64,-x,x,
+                    64,-x,x,
                     532e-9)
     #    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
     i.makeGaussian(0,0,0.2e-3,0.2e-3)
     i.plot(1)
     i.calculate()
-    i2 = i.propagate(d,1)
+    i2 = i.propagate(d,2)
     i2.calculate()
-#    i2.plot(2)
+    i2.plot(2)
     print i.xrms,i2.xrms
 
 #    darray = []
