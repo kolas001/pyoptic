@@ -35,7 +35,7 @@ class Intensity2D :
 
     def makeGaussian(self,mx,my,sx,sy) :
         print "Intensity:Intensity2D:makeGaussian",mx,my,sx,sy
-        self.i = pl.complex64(pl.exp(-((self.xgrid-mx)/sx)**2-((self.ygrid-my)/sy)**2))
+        self.i = 1/(sx*sy*2*pl.pi)*pl.complex64(pl.exp(-((self.xgrid-mx)**2/(2*sx**2))-((self.ygrid-my)**2/(2*sy**2))))
 
     def makeEllipticalFlatTop(self,mx,my,rx,ry) :
         print "Intensity:Intensity2D:makeEllipticalFlatTop",mx,my,rx,ry
@@ -80,11 +80,11 @@ class Intensity2D :
         pl.subplot(2,2,3)
         pl.plot(self.x,self.xproj)
         pl.xlim(self.startx,self.endx)
-        pl.subplot(2,2,4)
-        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
-        pl.xlim(self.startx,self.endx)
-        pl.ylim(self.starty,self.endy)
-        pl.colorbar()
+#        pl.subplot(2,2,4)
+#        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
+#        pl.xlim(self.startx,self.endx)
+#        pl.ylim(self.starty,self.endy)
+#        pl.colorbar()
     
     def project(self) :
         print "Intensity:Intensity2D:project"
@@ -126,71 +126,85 @@ class Intensity2D :
         # compute new window
         x2 = self.nx*d*self.wl/(self.endx-self.startx)
         y2 = self.ny*d*self.wl/(self.endy-self.starty)
-        
+
+        # create new intensity object
         i2 = Intensity2D(self.nx,-x2/2,x2/2,
                          self.ny,-y2/2,y2/2,
                          self.wl)
+
+        # compute intensity
         u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         ftu1p = pl.fftshift(pl.fft2(u1p))
         u2    = ftu1p*pl.sqrt(1j/(d*i2.wl))*pl.exp(1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
         i2.i = u2
+
         return i2
 
-        # create new intensity object
-
-        # compute intensity
-
-        
-        pass
-
     def fresnelConvolutionTransform(self,d) :
-        pass
+        # make intensity distribution
+        i2 = Intensity2D(self.nx,self.startx,self.endx,
+                         self.ny,self.starty,self.endy,
+                         self.wl)       
+
+        # FT on inital distribution 
+        u1ft = pl.fftshift(pl.fft2(self.i))
+
+        # 2d convolution kernel
+        k = 2*pl.pi/self.wl
+        
+        # make spatial frequency matrix
+        #       sfx =
+        #       sfy = 
+        maxsfx = 2*pl.pi/self.dx
+        maxsfy = 2*pl.pi/self.dy
+        
+        dsfx = 2*maxsfx/self.nx
+        dsfy = 2*maxsfy/self.ny
+        
+        self.sfx = pl.arange(-maxsfx,maxsfx+1e-15,dsfx)
+        self.sfy = pl.arange(-maxsfy,maxsfy+1e-15,dsfy)
+        
+        [self.sfxgrid, self.sfygrid] = pl.meshgrid(self.sfx,self.sfy)
+                
+        # make convolution kernel 
+        kern = pl.exp(1j*d*(self.sfxgrid**2+self.sfygrid**2)/(2*k))
+        
+        # apply convolution kernel and invert
+        i2.i = pl.ifft2(kern*u1ft) 
+
+        return i2
 
     def applyPhaseMap(self,pm) :
         pass
     
     def applyIntensityMap(self,im) :
         pass
-#                          128                 512
-# 0.01  9.99709186538e-05 0.000101681834108    0.000100494672488
-# 0.025 0.000100000005848 0.000102277437825    0.000100984770495
-# 0.05  0.00010000001227  0.000104085648745    0.000102679756588
-# 0.075 0.000100000011289 0.000106949258587    0.00010542359127
-# 0.1   0.000100000000021 0.000110786458382    0.000109137195542
-# 0.5   0.000100000000191 0.000238916716463    0.00023530284487
-# 1.0   0.000100000005911 0.00044307245771     0.000437005044552
-# 2.0   0.000100000002613 0.000867286403545    0.000856233931076    
-# 3.0   0.000100000527084 0.00129534672633     0.0012792841386
-# 4.0   0.000100019612188 0.00172416963837     0.00170331074285
-# 5.0   0.000100162415431 0.00215156828542     0.00212773010505 
-# 6.0   0.000100641977196 0.00257316616299     0.00255234629626
 
-def IntensityTest(d = 0.1) : 
+def fresnelSingleTransformVWTest() :
     x = 3e-3
-
-    i = Intensity2D(64,-x,x,
-                    64,-x,x,
+    i = Intensity2D(512,-x/2,x/2,
+                    512,-x/2,x/2,
                     532e-9)
-    #    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
-    i.makeGaussian(0,0,0.2e-3,0.2e-3)
+    #    i.makeGaussian(0,0,0.1e-3,0.1e-3)
+    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
     i.plot(1)
     i.calculate()
-    i2 = i.propagate(d,2)
+    
+    i2 = i.propagate(0.005,2)
     i2.calculate()
     i2.plot(2)
-    print i.xrms,i2.xrms
 
-#    darray = []
-#    xrmsarray = []
-#    darray.append(0)
-#    xrmsarray.append(i.xrms)
+def fresnelConvolutionTransformTest(d) :
+    x = 20e-3
+    i = Intensity2D(1024,-x/2,x/2,
+                    1024,-x/2,x/2,
+                    532e-9)
+    #    i.makeGaussian(0,0,0.1e-3,0.1e-3)
+    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
+    i.plot(1)
+    i.calculate()
+    
+    i2 = i.propagate(d,3)
+    i2.calculate()
+    i2.plot(2)
 
-#    drange = pl.arange(0.000000001,0.5,0.005)
-#    for d in drange :
-#        i2 = i.propagate(d,1)
-#        i2.calculate() 
-#        darray.append(d)
-#        xrmsarray.append(i2.xrms)
-#    pl.plot(darray,xrmsarray)
-
-    return i
