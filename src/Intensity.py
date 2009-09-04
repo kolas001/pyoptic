@@ -153,8 +153,6 @@ class Intensity2D :
         k = 2*pl.pi/self.wl
         
         # make spatial frequency matrix
-        #       sfx =
-        #       sfy = 
         maxsfx = 2*pl.pi/self.dx
         maxsfy = 2*pl.pi/self.dy
         
@@ -179,6 +177,10 @@ class Intensity2D :
     
     def applyIntensityMap(self,im) :
         pass
+
+############################################################################
+# Unit test algorithms.
+############################################################################
 
 def fresnelSingleTransformVWTest() :
     x = 3e-3
