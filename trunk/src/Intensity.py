@@ -51,10 +51,11 @@ class Intensity2D :
         
         rx = pl.double(rx)
         ry = pl.double(ry)
+        a = rx*ry
         self.i = pl.complex64( (self.xgrid>=-rx/2+mx) & 
                                (self.xgrid<=rx/2+mx)  & 
                                (self.ygrid>=-ry/2+my) &
-                               (self.ygrid<=ry/2+my) )
+                               (self.ygrid<=ry/2+my) )/a
 
     def makeHermiteGaussian(self) :
         pass
@@ -80,7 +81,7 @@ class Intensity2D :
         pl.subplot(2,2,3)
         pl.plot(self.x,self.xproj)
         pl.xlim(self.startx,self.endx)
-#        pl.subplot(2,2,4)
+        pl.subplot(2,2,4)
 #        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
 #        pl.xlim(self.startx,self.endx)
 #        pl.ylim(self.starty,self.endy)
@@ -104,13 +105,13 @@ class Intensity2D :
 
     def propagate(self, d, type = 1) :
         if type == 1 : 
-            i = self.fresnelSingleTransformFW(d)
+            i2 = self.fresnelSingleTransformFW(d)
         elif type == 2 :
-            i = self.fresnelSingleTransformVW(d)
+            i2 = self.fresnelSingleTransformVW(d)
         elif type == 3 :
-            i = self.fresnelConvolutionTransform(d)
+            i2 = self.fresnelConvolutionTransform(d)
         
-        return i
+        return i2
 
     def fresnelSingleTransformFW(self,d) :
         i2 = Intensity2D(self.nx,self.startx,self.endx,
@@ -118,7 +119,7 @@ class Intensity2D :
                          self.wl)
         u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         ftu1p = pl.fftshift(pl.fft2(u1p))
-        u2    = ftu1p*pl.sqrt(1j/(d*self.wl))*pl.exp(1j*pl.pi/(d*self.wl)*(i2.xgrid**2+i2.ygrid**2))
+        u2    = ftu1p*1j/(d*self.wl)*pl.exp(1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         i2.i = u2
         return i2
     
@@ -135,7 +136,7 @@ class Intensity2D :
         # compute intensity
         u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         ftu1p = pl.fftshift(pl.fft2(u1p))
-        u2    = ftu1p*pl.sqrt(1j/(d*i2.wl))*pl.exp(1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
+        u2    = ftu1p*1j/(d*i2.wl)*pl.exp(1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
         i2.i = u2
 
         return i2
@@ -156,12 +157,14 @@ class Intensity2D :
         maxsfx = 2*pl.pi/self.dx
         maxsfy = 2*pl.pi/self.dy
         
-        dsfx = 2*maxsfx/self.nx
-        dsfy = 2*maxsfy/self.ny
+        dsfx = 2*maxsfx/(self.nx)
+        dsfy = 2*maxsfy/(self.ny)
         
         self.sfx = pl.arange(-maxsfx,maxsfx+1e-15,dsfx)
         self.sfy = pl.arange(-maxsfy,maxsfy+1e-15,dsfy)
         
+        print len(self.sfx),len(self.sfy)
+
         [self.sfxgrid, self.sfygrid] = pl.meshgrid(self.sfx,self.sfy)
                 
         # make convolution kernel 
@@ -182,22 +185,22 @@ class Intensity2D :
 # Unit test algorithms.
 ############################################################################
 
-def fresnelSingleTransformVWTest() :
-    x = 3e-3
-    i = Intensity2D(512,-x/2,x/2,
-                    512,-x/2,x/2,
+def fresnelSingleTransformVWTest(d) :
+    x = 1.5e-3
+    i = Intensity2D(1024,-x/2,x/2,
+                    1024,-x/2,x/2,
                     532e-9)
-    #    i.makeGaussian(0,0,0.1e-3,0.1e-3)
+    #    i.makeGaussian(0,0,0.2e-3,0.2e-3)
     i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
     i.plot(1)
     i.calculate()
     
-    i2 = i.propagate(0.005,2)
+    i2 = i.propagate(d,2)
     i2.calculate()
     i2.plot(2)
 
 def fresnelConvolutionTransformTest(d) :
-    x = 20e-3
+    x = 1.5e-3
     i = Intensity2D(1024,-x/2,x/2,
                     1024,-x/2,x/2,
                     532e-9)
@@ -206,7 +209,48 @@ def fresnelConvolutionTransformTest(d) :
     i.plot(1)
     i.calculate()
     
-    i2 = i.propagate(d,3)
-    i2.calculate()
+    i2 = i.propagate(d/2.0,3)
     i2.plot(2)
+    i3 = i2.propagate(d/2.0,3)
+    
+    i3.calculate()
+    i3.plot(3)
 
+    i4 = i.propagate(d,3)
+    i4.calculate()
+    i4.plot(4)
+
+def methodCompare() :
+    x = 2e-3
+    d = 0.0078125
+    i = Intensity2D(1024,-x/2,x/2,
+                    1024,-x/2,x/2,
+                    500e-9)
+    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
+    i.calculate()
+
+    i2 = i.propagate(d,1)
+    i2.calculate()
+#    i2.plot(1)
+
+
+    i3 = i.propagate(d,2)
+    i3.calculate()
+#    i3.plot(2)
+
+    i4 = i.propagate(d/4,3)
+    i4.calculate()
+
+    pl.figure(3)
+    
+    pl.subplot(2,2,1)
+    pl.plot(i.x,i.xproj/max(i.xproj))
+    pl.subplot(2,2,2)
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.subplot(2,2,3)
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.subplot(2,2,4)
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.plot(i4.x,i4.xproj/max(i4.xproj))
+
+    
