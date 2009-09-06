@@ -52,7 +52,7 @@ class Intensity2D :
         rx = pl.double(rx)
         ry = pl.double(ry)
         a = rx*ry
-        self.i = pl.complex64( (self.xgrid>=-rx/2+mx) & 
+        self.i = pl.complex128( (self.xgrid>=-rx/2+mx) & 
                                (self.xgrid<=rx/2+mx)  & 
                                (self.ygrid>=-ry/2+my) &
                                (self.ygrid<=ry/2+my) )/a
@@ -82,10 +82,11 @@ class Intensity2D :
         pl.plot(self.x,self.xproj)
         pl.xlim(self.startx,self.endx)
         pl.subplot(2,2,4)
-#        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
-#        pl.xlim(self.startx,self.endx)
-#        pl.ylim(self.starty,self.endy)
-#        pl.colorbar()
+        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
+#        pl.imshow(pl.float32(pl.arctan2(self.i.imag,self.i.real)))
+        pl.xlim(self.startx,self.endx)
+        pl.ylim(self.starty,self.endy)
+        pl.colorbar()
     
     def project(self) :
         print "Intensity:Intensity2D:project"
@@ -148,10 +149,12 @@ class Intensity2D :
                          self.wl)       
 
         # FT on inital distribution 
-        u1ft = pl.fftshift(pl.fft2(self.i))
+#        u1ft = pl.fftshift(pl.fft2(self.i))
+        u1ft = pl.fft2(self.i)
+
 
         # 2d convolution kernel
-        k = 2*pl.pi/self.wl
+        k = 2*pl.pi/i2.wl
         
         # make spatial frequency matrix
         maxsfx = 2*pl.pi/self.dx
@@ -160,15 +163,17 @@ class Intensity2D :
         dsfx = 2*maxsfx/(self.nx)
         dsfy = 2*maxsfy/(self.ny)
         
-        self.sfx = pl.arange(-maxsfx,maxsfx+1e-15,dsfx)
-        self.sfy = pl.arange(-maxsfy,maxsfy+1e-15,dsfy)
-        
-        print len(self.sfx),len(self.sfy)
+        self.sfx = pl.arange(-maxsfx/2,maxsfx/2+1e-15,dsfx/2)
+        self.sfy = pl.arange(-maxsfy/2,maxsfy/2+1e-15,dsfy/2)
 
-        [self.sfxgrid, self.sfygrid] = pl.meshgrid(self.sfx,self.sfy)
+#        self.sfx = pl.arange(0,maxsfx+1e-15,dsfx/2)
+#        self.sfy = pl.arange(0,maxsfy+1e-15,dsfy/2)
+        
+        [self.sfxgrid, self.sfygrid] = pl.fftshift(pl.meshgrid(self.sfx,self.sfy))
                 
         # make convolution kernel 
         kern = pl.exp(1j*d*(self.sfxgrid**2+self.sfygrid**2)/(2*k))
+#        kern = pl.exp(-1j*pl.pi*d*self.wl*(self.sfxgrid**2+self.sfygrid**2))
         
         # apply convolution kernel and invert
         i2.i = pl.ifft2(kern*u1ft) 
@@ -200,11 +205,11 @@ def fresnelSingleTransformVWTest(d) :
     i2.plot(2)
 
 def fresnelConvolutionTransformTest(d) :
-    x = 1.5e-3
+    x = 2.0-3
     i = Intensity2D(1024,-x/2,x/2,
                     1024,-x/2,x/2,
                     532e-9)
-    #    i.makeGaussian(0,0,0.1e-3,0.1e-3)
+    # i.makeGaussian(0,0,0.2e-3,0.2e-3)
     i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
     i.plot(1)
     i.calculate()
@@ -215,6 +220,7 @@ def fresnelConvolutionTransformTest(d) :
     
     i3.calculate()
     i3.plot(3)
+    print type(i3.i[0,0])
 
     i4 = i.propagate(d,3)
     i4.calculate()
@@ -231,17 +237,17 @@ def methodCompare() :
 
     i2 = i.propagate(d,1)
     i2.calculate()
-#    i2.plot(1)
-
+    i2.plot(2)
 
     i3 = i.propagate(d,2)
     i3.calculate()
-#    i3.plot(2)
+    i3.plot(3)
 
-    i4 = i.propagate(d/4,3)
+    i4 = i.propagate(d,3)
     i4.calculate()
+    i4.plot(4)
 
-    pl.figure(3)
+    pl.figure(5)
     
     pl.subplot(2,2,1)
     pl.plot(i.x,i.xproj/max(i.xproj))
@@ -249,8 +255,9 @@ def methodCompare() :
     pl.plot(i2.x,i2.xproj/max(i2.xproj))
     pl.subplot(2,2,3)
     pl.plot(i3.x,i3.xproj/max(i3.xproj))
-    pl.subplot(2,2,4)
+    pl.subplot(2,2,4)        
     pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
     pl.plot(i4.x,i4.xproj/max(i4.xproj))
 
     
