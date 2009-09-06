@@ -108,14 +108,24 @@ class Intensity2D :
 
         i2 = None
 
-        if type == 1 : 
+        if type == 0 : 
+            i2 = self.fraunhofer(d)
+        elif type == 1 : 
             i2 = self.fresnelSingleTransformFW(d)
         elif type == 2 :
             i2 = self.fresnelSingleTransformVW(d)
         elif type == 3 :
             i2 = self.fresnelConvolutionTransform(d)
-        
+        elif type == 4 :
+            i2 = self.angularSpectrum(d)
+            
         return i2
+
+    def fraunhofer(self,d) :
+        pass 
+
+    def angularSpectrum(self,d) :
+        pass
 
     def fresnelSingleTransformFW(self,d) :
         i2 = Intensity2D(self.nx,self.startx,self.endx,
