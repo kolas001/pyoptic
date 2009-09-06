@@ -105,6 +105,9 @@ class Intensity2D :
         print "Intensity:Intensity2D:calculate ",self.xmean,self.ymean,self.xrms,self.yrms
 
     def propagate(self, d, type = 1) :
+
+        i2 = None
+
         if type == 1 : 
             i2 = self.fresnelSingleTransformFW(d)
         elif type == 2 :
@@ -119,15 +122,14 @@ class Intensity2D :
                          self.ny,self.starty,self.endy,
                          self.wl)
         u1p   = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
-        ftu1p = pl.fftshift(pl.fft2(u1p))
-        u2    = ftu1p*1j/(d*self.wl)*pl.exp(1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
-        i2.i = u2
+        ftu1p = pl.fftshift(pl.fft2(pl.fftshift(u1p)))
+        i2.i  = ftu1p*1j/(d*self.wl)*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         return i2
     
     def fresnelSingleTransformVW(self,d) :
         # compute new window
-        x2 = self.nx*d*self.wl/(self.endx-self.startx)
-        y2 = self.ny*d*self.wl/(self.endy-self.starty)
+        x2 = self.nx*pl.absolute(d)*self.wl/(self.endx-self.startx)
+        y2 = self.ny*pl.absolute(d)*self.wl/(self.endy-self.starty)
 
         # create new intensity object
         i2 = Intensity2D(self.nx,-x2/2,x2/2,
@@ -135,11 +137,9 @@ class Intensity2D :
                          self.wl)
 
         # compute intensity
-        u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
-        ftu1p = pl.fftshift(pl.fft2(pl.ifftshift(u1p)))
-        u2    = ftu1p*1j/(d*i2.wl)*pl.exp(1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
-        i2.i = u2
-
+        u1p   = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
+        ftu1p = pl.fftshift(pl.fft2(pl.fftshift(u1p)))
+        i2.i  = ftu1p*1j/(d*i2.wl)*pl.exp(-1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
         return i2
 
     def fresnelConvolutionTransform(self,d) :
@@ -151,7 +151,6 @@ class Intensity2D :
         # FT on inital distribution 
 #        u1ft = pl.fftshift(pl.fft2(self.i))
         u1ft = pl.fft2(self.i)
-
 
         # 2d convolution kernel
         k = 2*pl.pi/i2.wl
@@ -166,14 +165,10 @@ class Intensity2D :
         self.sfx = pl.arange(-maxsfx/2,maxsfx/2+1e-15,dsfx/2)
         self.sfy = pl.arange(-maxsfy/2,maxsfy/2+1e-15,dsfy/2)
 
-#        self.sfx = pl.arange(0,maxsfx+1e-15,dsfx/2)
-#        self.sfy = pl.arange(0,maxsfy+1e-15,dsfy/2)
-        
         [self.sfxgrid, self.sfygrid] = pl.fftshift(pl.meshgrid(self.sfx,self.sfy))
                 
         # make convolution kernel 
         kern = pl.exp(1j*d*(self.sfxgrid**2+self.sfygrid**2)/(2*k))
-#        kern = pl.exp(-1j*pl.pi*d*self.wl*(self.sfxgrid**2+self.sfygrid**2))
         
         # apply convolution kernel and invert
         i2.i = pl.ifft2(kern*u1ft) 
@@ -196,6 +191,7 @@ def fresnelSingleTransformFWTest() :
     wl = 500e-9
 
     d = x**2/(ns*wl)
+    print d
 
     i = Intensity2D(ns,-x/2,x/2,
                     ns,-x/2,x/2,
@@ -213,6 +209,16 @@ def fresnelSingleTransformFWTest() :
     i3.calculate()
     i3.plot(3)
 
+    i4 = i3.propagate(d,1)
+    i4.calculate()
+    i4.plot(4)
+
+    i5 = i4.propagate(d,1)
+    i5.calculate()
+    i5.plot(5)
+
+    return i3
+
 def fresnelSingleTransformVWTest(d) :
     ns = 1024
     x = 2.0e-3
@@ -222,7 +228,7 @@ def fresnelSingleTransformVWTest(d) :
                     ns,-x/2,x/2,
                     wl)
     #    i.makeGaussian(0,0,0.2e-3,0.2e-3)
-    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
+    i.makeRectangularFlatTop(0,0,0.3e-3,0.2e-3)
     i.plot(1)
     i.calculate()
     
@@ -253,7 +259,7 @@ def fresnelSingleTransformVWTest(d) :
     pl.plot(i3.x,i3.xproj/max(i3.xproj))
     pl.plot(i4.x,i4.xproj/max(i4.xproj))
 
-
+    return i3
 
 def fresnelConvolutionTransformTest(d) :
     x = 2.0e-3
@@ -275,6 +281,20 @@ def fresnelConvolutionTransformTest(d) :
     i4 = i.propagate(d,3)
     i4.calculate()
     i4.plot(4)
+
+    pl.figure(5)
+    pl.subplot(3,2,1)
+    pl.plot(i.x,i.xproj/max(i.xproj))
+    pl.subplot(3,2,2)
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.subplot(3,2,3)
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.subplot(3,2,4)
+    pl.plot(i4.x,i4.xproj/max(i4.xproj))
+    pl.subplot(3,2,5)        
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.plot(i4.x,i4.xproj/max(i4.xproj))
 
 def methodCompare() :
     x = 2e-3
