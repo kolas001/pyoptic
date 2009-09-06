@@ -82,11 +82,11 @@ class Intensity2D :
         pl.plot(self.x,self.xproj)
         pl.xlim(self.startx,self.endx)
         pl.subplot(2,2,4)
-        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
+#        pl.contourf(self.xgrid,self.ygrid,pl.arctan2(self.i.imag,self.i.real))
 #        pl.imshow(pl.float32(pl.arctan2(self.i.imag,self.i.real)))
-        pl.xlim(self.startx,self.endx)
-        pl.ylim(self.starty,self.endy)
-        pl.colorbar()
+#        pl.xlim(self.startx,self.endx)
+#        pl.ylim(self.starty,self.endy)
+#        pl.colorbar()
     
     def project(self) :
         print "Intensity:Intensity2D:project"
@@ -118,7 +118,7 @@ class Intensity2D :
         i2 = Intensity2D(self.nx,self.startx,self.endx,
                          self.ny,self.starty,self.endy,
                          self.wl)
-        u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
+        u1p   = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         ftu1p = pl.fftshift(pl.fft2(u1p))
         u2    = ftu1p*1j/(d*self.wl)*pl.exp(1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
         i2.i = u2
@@ -136,7 +136,7 @@ class Intensity2D :
 
         # compute intensity
         u1p = self.i*pl.exp(-1j*pl.pi/(d*self.wl)*(self.xgrid**2+self.ygrid**2))
-        ftu1p = pl.fftshift(pl.fft2(u1p))
+        ftu1p = pl.fftshift(pl.fft2(pl.ifftshift(u1p)))
         u2    = ftu1p*1j/(d*i2.wl)*pl.exp(1j*pl.pi/(d*i2.wl)*(i2.xgrid**2+i2.ygrid**2))
         i2.i = u2
 
@@ -190,22 +190,73 @@ class Intensity2D :
 # Unit test algorithms.
 ############################################################################
 
-def fresnelSingleTransformVWTest(d) :
-    x = 1.5e-3
-    i = Intensity2D(1024,-x/2,x/2,
-                    1024,-x/2,x/2,
-                    532e-9)
+def fresnelSingleTransformFWTest() :
+    ns = 1024
+    x = 2.0e-3
+    wl = 500e-9
+
+    d = x**2/(ns*wl)
+
+    i = Intensity2D(ns,-x/2,x/2,
+                    ns,-x/2,x/2,
+                    wl)
     #    i.makeGaussian(0,0,0.2e-3,0.2e-3)
     i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
     i.plot(1)
     i.calculate()
     
-    i2 = i.propagate(d,2)
+    i2 = i.propagate(d,1)
     i2.calculate()
     i2.plot(2)
 
+    i3 = i2.propagate(d,1)
+    i3.calculate()
+    i3.plot(3)
+
+def fresnelSingleTransformVWTest(d) :
+    ns = 1024
+    x = 2.0e-3
+    wl = 500e-9
+
+    i = Intensity2D(ns,-x/2,x/2,
+                    ns,-x/2,x/2,
+                    wl)
+    #    i.makeGaussian(0,0,0.2e-3,0.2e-3)
+    i.makeRectangularFlatTop(0,0,0.2e-3,0.2e-3)
+    i.plot(1)
+    i.calculate()
+    
+    i2 = i.propagate(d/2,2)
+    i2.calculate()
+    i2.plot(2)
+
+    i3 = i2.propagate(d/2,2)
+    i3.calculate()
+    i3.plot(3)
+
+    i4 = i.propagate(d,2)
+    i4.calculate()
+    i4.plot(4)
+
+    pl.figure(5)
+    
+    pl.subplot(3,2,1)
+    pl.plot(i.x,i.xproj/max(i.xproj))
+    pl.subplot(3,2,2)
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.subplot(3,2,3)
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.subplot(3,2,4)
+    pl.plot(i4.x,i4.xproj/max(i4.xproj))
+    pl.subplot(3,2,5)        
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.plot(i4.x,i4.xproj/max(i4.xproj))
+
+
+
 def fresnelConvolutionTransformTest(d) :
-    x = 2.0-3
+    x = 2.0e-3
     i = Intensity2D(1024,-x/2,x/2,
                     1024,-x/2,x/2,
                     532e-9)
@@ -220,7 +271,6 @@ def fresnelConvolutionTransformTest(d) :
     
     i3.calculate()
     i3.plot(3)
-    print type(i3.i[0,0])
 
     i4 = i.propagate(d,3)
     i4.calculate()
