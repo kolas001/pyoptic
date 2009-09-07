@@ -233,8 +233,58 @@ class Intensity2D :
         pass
 
 ############################################################################
+# Lenses 
+############################################################################          
+
+# thin paraxial lens
+def thinLens(f,i) :
+    t = pl.exp(-1j*2*pl.pi/i.wl*(i.xgrid**2+i.ygrid**2)/(2*f))
+    return t
+
+############################################################################
 # Unit test algorithms.
 ############################################################################
+
+def opticalSystemTest() :
+    ns = 1024
+    x  = 12.0e-3
+    wl = 532e-9
+
+    i  = Intensity2D(ns,-x/2,x/2,
+                    ns,-x/2,x/2,
+                    wl)
+    i.makeGaussian(0,0,2e-3,2e-3)
+    i.calculate()
+    
+    l = thinLens(-1000e-3,i)
+    i.i = l*i.i
+    
+    pl.figure(1)
+    i.plot(1)
+
+    dz = 2000e-3/50.0
+    zr = pl.arange(0,2000e-3,dz)
+
+    pl.figure(2)
+    
+    zarray    = []
+    xrmsarray = []
+    
+    ii = 1
+    for z in zr :
+        i2 = i.propagate(dz,3)
+        i2.calculate()
+        xrmsarray.append(i2.xrms)
+        print z,i2.xrms
+        if ii < 49 : 
+            pl.subplot(7,7,ii)
+            pl.plot(i2.x,i2.xproj)
+        i = i2
+        ii = ii + 1
+    
+    pl.figure(3)
+    pl.plot(zr,xrmsarray)    
+
 
 def fresnelSingleTransformFWTest() :
     ns = 1024
