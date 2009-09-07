@@ -149,16 +149,16 @@ class Intensity2D :
         dsfx = 2*maxsfx/(self.nx)
         dsfy = 2*maxsfy/(self.ny)
         
-        self.sfx = pl.arange(-maxsfx/4,maxsfx/4+1e-15,dsfx/4)
-        self.sfy = pl.arange(-maxsfy/4,maxsfy/4+1e-15,dsfy/4)
+        self.sfx = pl.arange(-maxsfx/2,maxsfx/2+1e-15,dsfx/2)
+        self.sfy = pl.arange(-maxsfy/2,maxsfy/2+1e-15,dsfy/2)
 
         print self.sfx
         print self.sfy
 
-        [self.sfxgrid, self.sfygrid] = pl.fftshift(pl.meshgrid(self.sfx,self.sfy))
+        [self.sfxgrid, self.sfygrid] = pl.meshgrid(self.sfx,self.sfy)
 
         # angular spectrum propagation kernel 
-        aspk = pl.exp(1j*d*pl.sqrt(k**2 - 4*pl.pi**2*(self.sfxgrid**2 + self.sfygrid**2)))
+        aspk = pl.fftshift(pl.exp(1j*d*pl.sqrt(k**2 -(self.sfxgrid**2 + self.sfygrid**2))))
 
         print "Angular spectrum propagation kernel"
         print aspk
@@ -414,6 +414,10 @@ def methodCompare() :
     i4.calculate()
     i4.plot(4)
 
+    i5 = i.propagate(d,4)
+    i5.calculate()
+    i5.plot(5)
+
     pl.figure(5)
     
     pl.subplot(2,2,1)
@@ -426,5 +430,6 @@ def methodCompare() :
     pl.plot(i2.x,i2.xproj/max(i2.xproj))
     pl.plot(i3.x,i3.xproj/max(i3.xproj))
     pl.plot(i4.x,i4.xproj/max(i4.xproj))
+    pl.plot(i5.x,i5.xproj/max(i5.xproj))
 
     
