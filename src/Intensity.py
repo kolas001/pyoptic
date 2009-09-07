@@ -125,7 +125,49 @@ class Intensity2D :
         pass 
 
     def angularSpectrum(self,d) :
-        pass
+        # make intensity distribution
+        i2 = Intensity2D(self.nx,self.startx,self.endx,
+                         self.ny,self.starty,self.endy,
+                         self.wl)       
+
+        # Angular spectrum (FT of input wavefield)
+        a = pl.fft2(pl.fftshift(self.i))
+        
+        print a
+
+        # 2d convolution kernel
+        k = 2*pl.pi/self.wl
+
+        print k
+
+        # make spatial frequency matrix
+        maxsfx = 2*pl.pi/self.dx
+        maxsfy = 2*pl.pi/self.dy
+
+        print maxsfx,maxsfy
+        
+        dsfx = 2*maxsfx/(self.nx)
+        dsfy = 2*maxsfy/(self.ny)
+        
+        self.sfx = pl.arange(-maxsfx/4,maxsfx/4+1e-15,dsfx/4)
+        self.sfy = pl.arange(-maxsfy/4,maxsfy/4+1e-15,dsfy/4)
+
+        print self.sfx
+        print self.sfy
+
+        [self.sfxgrid, self.sfygrid] = pl.fftshift(pl.meshgrid(self.sfx,self.sfy))
+
+        # angular spectrum propagation kernel 
+        aspk = pl.exp(1j*d*pl.sqrt(k**2 - 4*pl.pi**2*(self.sfxgrid**2 + self.sfygrid**2)))
+
+        print "Angular spectrum propagation kernel"
+        print aspk
+
+        # apply angular spectrum propagation kernel and inverse Fourier transform
+        i2.i = pl.fftshift(pl.ifft2(aspk*a))
+        
+        print i2.i
+        return i2
 
     def fresnelSingleTransformFW(self,d) :
         i2 = Intensity2D(self.nx,self.startx,self.endx,
@@ -305,6 +347,51 @@ def fresnelConvolutionTransformTest(d) :
     pl.plot(i2.x,i2.xproj/max(i2.xproj))
     pl.plot(i3.x,i3.xproj/max(i3.xproj))
     pl.plot(i4.x,i4.xproj/max(i4.xproj))
+
+def fresnelAngularSpectrumTest() :
+    ns = 1024
+    x = 2.0e-3
+    wl = 500e-9
+
+    d = x**2/(ns*wl)
+
+    d = 0.5e-3
+    i = Intensity2D(ns,-x/2,x/2,
+                    ns,-x/2,x/2,
+                    wl)
+    #    i.makeGaussian(0,0,0.2e-3,0.2e-3)
+    i.makeRectangularFlatTop(0,0,0.3e-3,0.2e-3)
+    i.plot(1)
+    i.calculate()
+    
+    i2 = i.propagate(d/2,4)
+    i2.calculate()
+    i2.plot(2)
+
+    i3 = i2.propagate(d/2,4)
+    i3.calculate()
+    i3.plot(3)
+
+    i4 = i.propagate(d,4)
+    i4.calculate()
+    i4.plot(4)
+
+    pl.figure(5)
+    
+    pl.subplot(3,2,1)
+    pl.plot(i.x,i.xproj/max(i.xproj))
+    pl.subplot(3,2,2)
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.subplot(3,2,3)
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.subplot(3,2,4)
+    pl.plot(i4.x,i4.xproj/max(i4.xproj))
+    pl.subplot(3,2,5)        
+    pl.plot(i2.x,i2.xproj/max(i2.xproj))
+    pl.plot(i3.x,i3.xproj/max(i3.xproj))
+    pl.plot(i4.x,i4.xproj/max(i4.xproj),"+")
+
+    return i3
 
 def methodCompare() :
     x = 2e-3
