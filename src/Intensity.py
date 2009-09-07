@@ -201,7 +201,6 @@ class Intensity2D :
                          self.wl)       
 
         # FT on inital distribution 
-#        u1ft = pl.fftshift(pl.fft2(self.i))
         u1ft = pl.fft2(self.i)
 
         # 2d convolution kernel
@@ -348,14 +347,11 @@ def fresnelConvolutionTransformTest(d) :
     pl.plot(i3.x,i3.xproj/max(i3.xproj))
     pl.plot(i4.x,i4.xproj/max(i4.xproj))
 
-def fresnelAngularSpectrumTest() :
+def angularSpectrumTest(d) :
     ns = 1024
     x = 2.0e-3
     wl = 500e-9
 
-    d = x**2/(ns*wl)
-
-    d = 0.5e-3
     i = Intensity2D(ns,-x/2,x/2,
                     ns,-x/2,x/2,
                     wl)
