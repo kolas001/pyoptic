@@ -28,3 +28,5 @@ denoted as [d]
   tamp(x, y)
   tphase(x, y)
 """
+
+import GaussianBeam
