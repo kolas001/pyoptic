@@ -3,38 +3,87 @@
 import numpy as np
 import pylab as pl
 
-class GaussianBeam:
+class GaussianBeam(object):
+    """
+    Zero-order Gaussian beam
+    """    
     def __init__(self, w0z0, k):
+        # TODO: handle array input (or not?)-should constructors return arrays?
         """
         GaussianBeam(w0, k)
         GaussianBeam((w0, z0), k)
+        Constructor
         """
         self._z0 = 0.0
         if isinstance(w0z0, tuple):
-            if len(w0z0)==1:
+            if len(w0z0) > 0:
                 self._w0 = w0z0[0]
-            elif len(w0z0)==2:
-                self._w0 = w0z0[0]
+            if len(w0z0) > 1:
                 self._z0 = w0z0[1]
-            else:
+            if len(w0z0) > 2:
                 raise TypeError('Expecting a scalar or 2-element tuple.')
         else:
-            try:
-                w0z0 = float(w0z0)
-                if isinstance(w0z0, float):
-                    self._w0 = w0z0
-            except:
-                raise TypeError('Expecting a scalar or 2-element tuple.')
+            self._w0 = w0z0
+            
+        try:
+            self._w0 = float(self._w0)
+            self._z0 = float(self._z0)
+        except:
+            raise TypeError('Expecting a scalar or 2-element tuple.')
             
         self._k = k
         self._zc = confocalDistance(self._w0, k)
     
+    def q(self, z):
+        """
+        q(z)
+        Complex beam parameter at position Z
+        """
+        return ComplexBeamParameter(self._zc, z - self._z0)
+        
     def field(self, r, z):
         q = complexBeamParameter(self._zc, z - self._z0)
         A = fieldAmplitude(q, self._k, r)
         P = fieldPhase(q, self._k, r)
         # TODO: improve efficiency by calculating A and P from private members
         return A*np.exp(P*1j)
+        
+class ComplexBeamParameter(object):
+    """
+    Zero-order Gaussian beam complex beam parameter
+    """
+    def __init__(self, *args):
+        # TODO: handle array input (or not?)-should constructors return arrays?
+        """
+        ComplexBeamParameter(q)
+        ComplexBeamParameter(zc, z)
+        """
+        nargin = len(args)
+        if nargin == 1:
+            self._q = complex(args[0])
+        elif nargin == 2:
+            self._q = complexBeamParameter(args[0], args[1])
+        else:
+            raise Error('Invalid number of input arguments.')
+            
+    def __rmul__(self, abcd):
+        abcd = np.matrix(abcd, dtype=float);
+        if (abcd.shape != (2,2)):
+            raise TypeError('Invalid ABCD matrix size.')
+        q2 = (abcd[0,0]*self._q + abcd[0,1])/(abcd[1,0]*self._q + abcd[1,1])
+        return ComplexBeamParameter(q2.imag, q2.real)
+        
+    def __complex__(self):
+        return self._q
+    
+    def __eq__(self, q):
+        return abs(self._q - complex(q)) <= 1e-15
+        
+    def __neq__(self, q):
+        return abs(self._q - complex(q)) > 1e-15
+        
+    def __repr__(self):
+        return repr(self._q)
         
 
 def confocalDistance(w0, k):
@@ -52,10 +101,10 @@ def complexBeamParameter(zc, z):
     
     See also: confocalDistance
     """
-    z = np.array(z)
+    z = np.array(z, dtype=float)
     tmp1 = pl.zeros(z.shape, np.complex)
     tmp1.real = z
-    zc = np.array(zc)
+    zc = np.array(zc, dtype=float)
     tmp2 = pl.zeros(zc.shape, np.complex)
     tmp2.imag = zc
     return tmp1 + tmp2
@@ -206,6 +255,12 @@ def test(dryTest=True):
     gb = GaussianBeam(beamWaist(q[0], 2*pi/lam), 2*pi/lam)
     (R,Z)= pl.meshgrid(np.arange(-24,24), np.arange(0,100))
     if not dryTest: pl.figure(); pl.imshow(abs(gb.field(R, Z)))
+    print "Testing ComplexBeamParameter class"
+    d = 10
+    q = gb.q(0)
+    abcd = np.matrix([[1, d],[0, 1]], dtype=float)
+    qo = abcd*q
+    assert qo == gb.q(d)
     print "Pass"
 
 # if __name__ == "__main__":
