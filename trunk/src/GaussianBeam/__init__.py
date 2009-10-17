@@ -29,4 +29,4 @@ denoted as [d]
   tphase(x, y)
 """
 
-import GaussianBeam
+from GaussianBeam import *
