@@ -14,6 +14,8 @@ class GaussianBeam(object):
         GaussianBeam((w0, z0), k)
         Constructor
         """
+        self._path = [] # a list of paraxial elements
+        #TODO: use a Path class to constrain operations and element types
         self._z0 = 0.0
         if isinstance(w0z0, tuple):
             if len(w0z0) > 0:
@@ -39,7 +41,20 @@ class GaussianBeam(object):
         q(z)
         Complex beam parameter at position Z
         """
-        return ComplexBeamParameter(self._zc, z - self._z0)
+        # assume that elements in _path are ordered by Z
+        # TODO: make sure that elements are ordered by Z
+        if len(self._path) > 0:
+            raise Error('Not implemented')
+        else:
+            q = ComplexBeamParameter(self._zc, z - self._z0) 
+        return q
+    
+    def __rmul__(self, el):
+        qin = self.q(el.z)
+        qout = el.abcd*qin
+        w0, z0 = beamWaist(complex(qout), self._k)
+        # TODO: this assumes that element has zero thickness -> add thickness property to ParaxialElement?
+        return GaussianBeam((w0, el.z + z0), self._k)
         
     def field(self, r, z):
         q = complexBeamParameter(self._zc, z - self._z0)
@@ -67,7 +82,7 @@ class ComplexBeamParameter(object):
             raise Error('Invalid number of input arguments.')
             
     def __rmul__(self, abcd):
-        abcd = np.matrix(abcd, dtype=float);
+        abcd = np.matrix(abcd, dtype=float)
         if (abcd.shape != (2,2)):
             raise TypeError('Invalid ABCD matrix size.')
         q2 = (abcd[0,0]*self._q + abcd[0,1])/(abcd[1,0]*self._q + abcd[1,1])
@@ -84,6 +99,20 @@ class ComplexBeamParameter(object):
         
     def __repr__(self):
         return repr(self._q)
+        
+class ParaxialElement(object):
+    """
+    An optical element which can be modeled by an ABCD matrix
+    """
+    def __init__(self, z, abcd):
+        """
+        ParaxialElement(Z, ABCD) element at position Z with ABCD matrix 
+        """
+        #TODO: perhaps define this more strictly
+        self.abcd = np.matrix(abcd, dtype=float);
+        if (self.abcd.shape != (2,2)):
+            raise TypeError('Invalid ABCD matrix size.')
+        self.z = float(z)
         
 
 def confocalDistance(w0, k):
@@ -163,7 +192,7 @@ def beamWaistPosition(q):
 
 def beamWaist(q, k):
     """
-    Beam waist radius, position as tuple (W0, Z0) [d] from complex beam
+    Beam waist radius and position as tuple (W0, Z0) [d] from complex beam
     parameter Q [d] and wave number K [1/d].
     
     See also: complexBeamParameter, beamWaistRadius, beamWaistPosition
@@ -261,6 +290,12 @@ def test(dryTest=True):
     abcd = np.matrix([[1, d],[0, 1]], dtype=float)
     qo = abcd*q
     assert qo == gb.q(d)
+    print "Testing ParaxialElement class"
+    el = ParaxialElement(0, abcd)
+    gb2 = el*gb
+    print gb2.q(0)
+    print gb.q(d)
+    assert gb2.q(0)==gb.q(d)
     print "Pass"
 
 # if __name__ == "__main__":
