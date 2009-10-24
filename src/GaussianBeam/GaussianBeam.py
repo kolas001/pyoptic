@@ -90,12 +90,6 @@ class ComplexBeamParameter(object):
         
     def __complex__(self):
         return self._q
-    
-    def __eq__(self, q):
-        return abs(self._q - complex(q)) <= 1e-15
-        
-    def __neq__(self, q):
-        return abs(self._q - complex(q)) > 1e-15
         
     def __repr__(self):
         return repr(self._q)
@@ -104,15 +98,37 @@ class ParaxialElement(object):
     """
     An optical element which can be modeled by an ABCD matrix
     """
-    def __init__(self, z, abcd):
+    def __init__(self, abcd, z):
         """
-        ParaxialElement(Z, ABCD) element at position Z with ABCD matrix 
+        ParaxialElement(ABCD, Z) element at position Z with ABCD matrix 
         """
         #TODO: perhaps define this more strictly
         self.abcd = np.matrix(abcd, dtype=float);
         if (self.abcd.shape != (2,2)):
             raise TypeError('Invalid ABCD matrix size.')
         self.z = float(z)
+        
+class ThinLens(ParaxialElement):
+    """
+    A thin lens
+    """
+    def __init__(self, f, z):
+        """
+        ThinLens(F, Z) thin lens at position Z, focal length F
+        """
+        self._f = float(f)
+        ParaxialElement.__init__(self, [[1.0, 0.0],[-1.0/self._f, 1]], z)
+        
+    def beamWaistMag(self, zc, z0):
+        """
+        beamWaistMag(ZC, Z0)
+        Input to output Gaussian beam waist magnification for input beam with
+        confocal distance parameter ZC and waist position Z0
+        """
+        zc = np.array(zc, dtype=float)
+        din = np.array(self.z - z0, dtype=float)
+        M = 1.0/np.sqrt((din/self._f - 1)**2 + (zc/self._f)**2)
+        return M
         
 
 def confocalDistance(w0, k):
@@ -291,7 +307,7 @@ def test(dryTest=True):
     qo = abcd*q
     assert qo == gb.q(d)
     print "Testing ParaxialElement class"
-    el = ParaxialElement(0, abcd)
+    el = ParaxialElement(abcd, 0)
     gb2 = el*gb
     print gb2.q(0)
     print gb.q(d)
