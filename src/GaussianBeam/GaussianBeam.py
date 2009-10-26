@@ -35,6 +35,12 @@ class GaussianBeam(object):
             
         self._k = k
         self._zc = confocalDistance(self._w0, k)
+        
+    def w(self, z, k):
+        q = complexBeamParameter(self._zc, z - self._z0)
+        invq = 1.0/q;
+        w = np.sqrt(-2.0/self._k/invq.imag)
+        return w
     
     def q(self, z):
         """
@@ -80,6 +86,7 @@ class ComplexBeamParameter(object):
             self._q = complexBeamParameter(args[0], args[1])
         else:
             raise Error('Invalid number of input arguments.')
+        self._invq = 1.0/self._q
             
     def __rmul__(self, abcd):
         abcd = np.matrix(abcd, dtype=float)
@@ -93,6 +100,10 @@ class ComplexBeamParameter(object):
         
     def __repr__(self):
         return repr(self._q)
+        
+    def w(self, k):
+        w = np.sqrt(2.0/(-k*self._invq.imag))
+        return w
         
 class ParaxialElement(object):
     """
@@ -112,23 +123,34 @@ class ThinLens(ParaxialElement):
     """
     A thin lens
     """
-    def __init__(self, f, z):
+    def __init__(self, f, z0):
         """
-        ThinLens(F, Z) thin lens at position Z, focal length F
+        ThinLens(F, Z0) thin lens at position Z0, focal length F
         """
         self._f = float(f)
-        ParaxialElement.__init__(self, [[1.0, 0.0],[-1.0/self._f, 1]], z)
+        ParaxialElement.__init__(self, [[1.0, 0.0],[-1.0/self._f, 1]], z0)
         
-    def beamWaistMag(self, zc, z0):
+    def transformBeamWaist(self, w0z0, k):
         """
-        beamWaistMag(ZC, Z0)
-        Input to output Gaussian beam waist magnification for input beam with
-        confocal distance parameter ZC and waist position Z0
+        W1, Z1 = transformBeamWaist(W0, K)
+        W1, Z1 = transformBeamWaist((W0, Z0), K)        
+        Input to output Gaussian beam waist transformation for input beam with
+        beam waist W0 at position Z0 and wavenumber K
         """
-        zc = np.array(zc, dtype=float)
-        din = np.array(self.z - z0, dtype=float)
-        M = 1.0/np.sqrt((din/self._f - 1)**2 + (zc/self._f)**2)
-        return M
+        _w0 = w0z0
+        _z0 = 0
+        if isinstance(w0z0, tuple):
+            if len(w0z0) > 0:
+                _w0 = w0z0[0]
+            if len(w0z0) > 1:
+                _z0 = w0z0[1]
+            if len(w0z0) > 2:
+                raise TypeError('Expecting a scalar or 2-element tuple.')
+        zc = np.array(confocalDistance(_w0, k), dtype=float)/self._f
+        din = np.array(self.z - _z0, dtype=float)/self._f
+        M = 1.0/np.sqrt((din - 1)**2 + zc**2)
+        dout = 1 + (din - 1)/((din - 1)**2 + zc**2);
+        return (_w0*M, self.z + dout*self._f)
         
 
 def confocalDistance(w0, k):
