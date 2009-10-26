@@ -28,3 +28,9 @@ denoted as [d]
   tamp(x, y)
   tphase(x, y)
 """
+
+#__all__ = ['GaussianBeam']
+
+from GaussianBeam import *
+
+# TODO exclude import of locally imported modules like numpy, pylab

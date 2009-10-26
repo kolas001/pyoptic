@@ -2,11 +2,6 @@
 import unittest
 import numpy as np
 
-try:
-    reload(GaussianBeam)
-except:
-    pass
-
 from GaussianBeam import *
 
 class GaussianBeamTest(unittest.TestCase):
@@ -79,16 +74,61 @@ class GaussianBeamTest(unittest.TestCase):
     #assert gb2.q(0)==gb.q(d)
     #print "Pass"
     
+    def testTelescope(self):
+        import matplotlib
+        matplotlib.use('AGG')
+        import matplotlib.mlab as ml
+        import pylab as pl
+        import time        
+        w0 = 8.0
+        k = 2*np.pi/3.0
+        gb = GaussianBeam(w0, k)
+        lens = ThinLens(150, 150)
+        gb2 = lens*gb
+        self.assertAlmostEqual(gb2._z0, gb._z0 + 2*150.0)
+        lens2 = ThinLens(300, 600)
+        gb3 = lens2*gb2
+        self.assertAlmostEqual(gb3._z0, gb2._z0 + 2*300.0)
+        self.assertAlmostEqual(gb._w0, gb3._w0/2.0)
+        z = np.arange(0, 150)
+        z2 = np.arange(150, 600)
+        z3 = np.arange(600, 900)
+        pl.plot(z, gb.w(z, k), z2, gb2.w(z2, k), z3, gb3.w(z3, k))
+        pl.grid()
+        pl.xlabel('z')
+        pl.ylabel('w')
+        pl.savefig('testTelescope1.png')
+        time.sleep(0.1)
+        pl.close('all')        
+    
 class ParaxialElementTest(unittest.TestCase):
     def setUp(self):
         self.gb = GaussianBeam((8.0, -50.0), 2*np.pi/3.0)
         
     def testThinLens(self):
+        import matplotlib
+        matplotlib.use('AGG')
+        import matplotlib.mlab as ml
+        import pylab as pl
+        import time
         lens = ThinLens(150.0, 100.0)
         gbOut = lens*self.gb
         self.assertAlmostEqual(gbOut._z0, 250.0)
-        M = lens.beamWaistMag(self.gb._zc, -50.0)
-        self.assertAlmostEqual(gbOut._w0, self.gb._w0*M)
+        (w1, z1) = lens.transformBeamWaist((self.gb._w0, self.gb._z0), self.gb._k)
+        self.assertAlmostEqual(gbOut._w0, w1)
+        
+        f = 150.0
+        lens = ThinLens(f, 0)
+        w0, z0 = ml.meshgrid([4.0, 8.0, 16.0], np.arange(-3*f, f))
+        (w1, z1) = lens.transformBeamWaist((w0, z0), self.gb._k)
+        #h = pl.figure()
+        pl.plot(z0/f, z1/f)
+        pl.grid()
+        pl.xlabel('d_{in} [f]')
+        pl.ylabel('d_{out} [f]')
+        pl.savefig('testThinLens1.png')
+        time.sleep(0.1)
+        pl.close('all')
     
 if __name__ == '__main__':
     #unittest.main()
