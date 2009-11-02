@@ -44,35 +44,40 @@ class GaussianBeamTest(unittest.TestCase):
         self.assertAlmostEqual(w[0], w0)
         self.assertAlmostEqual(w[1], np.sqrt(2.0)*w0)
         self.assertAlmostEqual(beamWaistRadius(q[1], k), w0)
+        #if not dryTest: pl.figure(); pl.plot(z, w)
+        #print "Running field tests ..."
+        r = np.array([0, w0, 2*w0])
+        A = fieldAmplitude(q[0], k, r)
+        self.assertAlmostEqual(abs(A[0]), 1)
+        self.assertAlmostEqual(abs(A[1]), np.exp(-1.0))
+        self.assertAlmostEqual(abs(A[2]), np.exp(-4.0))
+        P = fieldPhase(q[0], k, r)
+        self.assertAlmostEqual(abs(P[0]), 0)
+        self.assertAlmostEqual(abs(P[1]), 0)
+        # TODO: add some characteristic points along Z
     
-    #if not dryTest: pl.figure(); pl.plot(z, w)
-    #print "Running field tests ..."
-    #r = np.array([0, w0, 2*w0])
-    #A = fieldAmplitude(q[0], 2*pi/lam, r)
-    #assert abs(A[0]-1) < 1.0e-15
-    #assert abs(A[1]-np.exp(-1.0)) < 1.0e-15
-    #assert abs(A[2]-np.exp(-4.0)) < 1.0e-15
-    #P = fieldPhase(q[0], 2*pi/lam, r)
-    #assert abs(P[0]) < 1.0e-15
-    #assert abs(P[1]) < 1.0e-15
-    ## TODO: add some characteristic points along Z
-    #print "Testing GaussianBeam class"
-    #gb = GaussianBeam(beamWaist(q[0], 2*pi/lam), 2*pi/lam)
-    #(R,Z)= pl.meshgrid(np.arange(-24,24), np.arange(0,100))
-    #if not dryTest: pl.figure(); pl.imshow(abs(gb.field(R, Z)))
-    #print "Testing ComplexBeamParameter class"
-    #d = 10
-    #q = gb.q(0)
-    #abcd = np.matrix([[1, d],[0, 1]], dtype=float)
-    #qo = abcd*q
-    #assert qo == gb.q(d)
-    #print "Testing ParaxialElement class"
-    #el = ParaxialElement(abcd, 0)
-    #gb2 = el*gb
-    #print gb2.q(0)
-    #print gb.q(d)
-    #assert gb2.q(0)==gb.q(d)
-    #print "Pass"
+    def testClasses(self):
+        w0 = 8.0
+        lam = 3.0
+        k = 2*np.pi/lam
+        zc = confocalDistance(w0, k)
+        z = np.array([0, zc])
+        q = complexBeamParameter(zc, z)        
+        #print "Testing GaussianBeam class"
+        gb = GaussianBeam(beamWaist(q[0], k), k)
+        (R,Z)= pl.meshgrid(np.arange(-24,24), np.arange(0,100))
+        #if not dryTest: pl.figure(); pl.imshow(abs(gb.field(R, Z)))
+        d = 10.0
+        q = gb.q(0)
+        abcd = np.matrix([[1, d],[0, 1]], dtype=float)
+        qo = abcd*q
+        self.assertEqual(qo, gb.q(d))
+        #print "Testing ParaxialElement class"
+        el = ParaxialElement(abcd, 0)
+        gb2 = el*gb
+        #print gb2.q(0)
+        #print gb.q(d)
+        self.assertEqual(gb2.q(0), gb.q(d))
     
     def testTelescope(self):
         import matplotlib
