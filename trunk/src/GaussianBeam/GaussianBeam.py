@@ -101,6 +101,9 @@ class ComplexBeamParameter(object):
     def __repr__(self):
         return repr(self._q)
         
+    def __eq__(self, other):
+        return self._q == complex(other)
+        
     def w(self, k):
         w = np.sqrt(2.0/(-k*self._invq.imag))
         return w
