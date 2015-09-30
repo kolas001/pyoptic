@@ -1,0 +1,4 @@
+Pyoptic is an optics and physics simulation based on python and uses scipy as a calculation engine, matplotlib and tvtk for visualisation.
+It is mainly intended for simple simulations of optical engineering, imaging systems, laser systems, laser transportation and applications, lens design etc.
+
+Currently there is only one developer (myself) and it would be great if people who have an interest joined. I am currently working on the diffraction calculations, something I need for my research. If there are any physics students (undergraduate, post-graduate), postdoctoral researchers and just generally interested people, please contact me and maybe start contributing some code. I am a average python programmer and am using this project to improve my skills so you don't have to be very professional. Also if you are a teacher/educator the code can be modified for teaching examples and classes, again get in touch.
